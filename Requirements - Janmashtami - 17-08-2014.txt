@@ -1,0 +1,40 @@
+Profile
+	Think: Change ymht field to profile in Memberships model
+	Coordinator-
+		Can only create memberships of helper and participant
+	Helper-
+		can only see participants
+	Participant -
+		For this user is not required, because we're not creating a user for each YMHT. Hence, user can be blank in profile
+
+Sessions
+	New Session
+		1. Handle no profile error, specially for admin
+		3. Remove validaion of time 9 am - 9 pm in create session
+	Report	
+		4. Add approvals to Session report
+
+Masters
+	
+		5. change locality to center_name	
+
+Users
+(While creating users, remember this)
+	7. Don't give delete permissions for profile
+
+2. YMHT should have no permissions - Do we need to make user for YMHTs
+
+6. Queryset - filter coordinators to helper and participant
+Helper - can only make participant
+
+8. SMS, email approval - Time between 9 am - 9 pm
+
+Give no membership permisions
+created by default and queryset value i.e request.user
+approval done - with multiple membership bugs
+
+
+
+Check approvals - 
+
+Local Event Sewa Details - Local access to their own masters
