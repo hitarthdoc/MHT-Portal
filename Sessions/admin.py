@@ -14,8 +14,29 @@ class SessionFlowInline(admin.TabularInline):
 		models.TextField: {'widget': Textarea(attrs={'rows':4, 'cols':40})},
 	}
 
+	def get_readonly_fields(self, request, obj=None):
+		if obj:
+			if obj.approved == True:
+				return ('session', 'time', 'activity', 'description', 'details')
+			else:
+				return []
+		else:
+			return []
+
 class SessionMediaInline(admin.TabularInline):
 	model = SessionMedia
+
+	extra = 1
+
+	def get_readonly_fields(self, request, obj=None):
+		if obj:
+			if obj.approved == True:
+				return ('session', 'title', 'category', 'attachment')
+			else:
+				return []
+		else:
+			return []
+
 
 class AttendanceInline(admin.TabularInline):
 	model = Attendance
@@ -23,6 +44,16 @@ class AttendanceInline(admin.TabularInline):
 	extra = 1
 	max_num = 1
 	can_delete = False
+
+	# def get_readonly_fields(self, request, obj=None):
+	# 	if obj:
+	# 		if obj.approved == True:
+	# 			return ('ymht', 'session')
+	# 		else:
+	# 			return []
+	# 	else:
+	# 		return []
+
 	
 	def formfield_for_manytomany(self, db_field, request, **kwargs):
 		if not Profile.objects.filter(user=request.user).exists():
@@ -46,7 +77,7 @@ class AttendanceInline(admin.TabularInline):
 			part_members = Membership.objects.filter(role = participant_or_helper)
 			part_members = part_members.filter(center__in=current_centers, age_group__in=current_age_groups)
 			participant_profiles = Profile.objects.filter(membership__in=part_members)
-			kwargs['queryset'] = participant_profiles
+			kwargs['queryset'] = participant_profiles.distinct()
 		return super(AttendanceInline, self).formfield_for_manytomany(db_field, request, **kwargs)
 
 class CoordAttendanceInline(admin.TabularInline):
@@ -55,6 +86,15 @@ class CoordAttendanceInline(admin.TabularInline):
 	max_num = 1
 	extra = 1
 	can_delete = False
+
+	# def get_readonly_fields(self, request, obj=None):
+	# 	if obj:
+	# 		if obj.approved == True:
+	# 			return ('coords', 'session')
+	# 		else:
+	# 			return []
+	# 	else:
+	# 		return []
 
 	def formfield_for_manytomany(self, db_field, request, **kwargs):
 		if not Profile.objects.filter(user=request.user).exists():
@@ -78,7 +118,7 @@ class CoordAttendanceInline(admin.TabularInline):
 			coords_members = Membership.objects.filter(role = coordinator)
 			coords_members = coords_members.filter(center__in=current_centers, age_group__in=current_age_groups)
 			coords_profiles = Profile.objects.filter(membership__in=coords_members)
-			kwargs['queryset'] = coords_profiles
+			kwargs['queryset'] = coords_profiles.distinct()
 		return super(CoordAttendanceInline, self).formfield_for_manytomany(db_field, request, **kwargs)
 
 class ReportAdmin(admin.ModelAdmin):
@@ -89,15 +129,23 @@ class ReportAdmin(admin.ModelAdmin):
 		CoordAttendanceInline,
 	]
 	
+	list_display = ('session_name', 'created_by', 'approved')
+	
+	def get_readonly_fields(self, request, obj=None):
+		if obj:
+			if obj.approved == True:
+				return ('session_name', 'date', 'place', 'Duration', 'improvement', 'category', 'attachment', 'created_by')
+			else:
+				return []
+		else:
+			return []
+
 	def queryset(self, request):
 		qs = super(ReportAdmin, self).queryset(request)
 		if request.user.is_superuser:
 			return qs
 
 		approved_qs = qs.filter(approved=True)
-		non_approved_qs = qs.exclude(approved=True)
-		print non_approved_qs
-		# print non_approved_qs
 		if not Profile.objects.filter(user=request.user).exists():
 			return Report.objects.none()
 		
@@ -118,7 +166,7 @@ class ReportAdmin(admin.ModelAdmin):
 		filtered_qs = qs.filter(session_name__center_name__in=current_centers)
 		filtered_qs = filtered_qs.filter(session_name__age_group__in=current_age_groups)
 		if max(current_roles) > 2:
-			approved_qs = reduce(OR, [non_approved_qs, approved_qs, filtered_qs])
+			approved_qs = reduce(OR, [approved_qs, filtered_qs])
 			print str(approved_qs)
 		return approved_qs
 
@@ -191,6 +239,7 @@ class ReportAdmin(admin.ModelAdmin):
 	}
 
 class NewSessionAdmin(admin.ModelAdmin):
+	list_display = ('name', 'start_date', 'approved')
 	def queryset(self, request):
 		qs = super(NewSessionAdmin, self).queryset(request)
 		if request.user.is_superuser:
