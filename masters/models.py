@@ -30,6 +30,18 @@ class SessionType(models.Model):
 	def __unicode__(self):
 		return '%s' % (self.session_type)
 
+class Activities(models.Model):
+
+	activities = models.CharField(blank=True, null=False, max_length=255)
+
+
+	def __unicode__(self):
+		return '%s' % (self.activities)
+
+	class Meta:
+		verbose_name_plural = 'Activities'
+
+
 class Experience(models.Model):
 
 	experience = models.CharField(blank=True, null=True, max_length=10)
@@ -80,15 +92,15 @@ class Hobby(models.Model):
 		verbose_name_plural = 'Hobby'
 
 
-class Coordinator(models.Model):
-  first_name = models.CharField(max_length=255)
-  last_name = models.CharField(max_length=255)
-  user = models.ForeignKey(User, blank=True, null=True)
-  date_of_birth = models.DateField()
-  gnan_date = models.DateField(blank=True, null=True)
-
-  def __unicode__(self):
-    return '%s %s' % (self.first_name, self.last_name)
+# class Coordinator(models.Model):
+#   first_name = models.CharField(max_length=255)
+#   last_name = models.CharField(max_length=255)
+#   user = models.ForeignKey(User, blank=True, null=True)
+#   date_of_birth = models.DateField()
+#   gnan_date = models.DateField(blank=True, null=True)
+# 
+#   def __unicode__(self):
+#     return '%s %s' % (self.first_name, self.last_name)
 
 
 class Center(models.Model):

@@ -11,6 +11,7 @@ from .models import (Profile, YMHTMobile,
                     GNCSewaDetails, LocalEventSewaDetails, GlobalEventSewaDetails)
 from Sessions.models import *
 from django_countries.fields import CountryField
+from django import forms
 
 
 class YMHTMobileInline(admin.StackedInline):
@@ -32,15 +33,22 @@ class YMHTEducationInline(admin.StackedInline):
 class YMHTJobInline(admin.StackedInline):
     model = YMHTJob
     extra = 1
+
+class RequiredFormSet(forms.models.BaseInlineFormSet):
+    def __init__(self, *args, **kwargs):
+        super(RequiredFormSet, self).__init__(*args, **kwargs)
+        self.forms[0].empty_permitted = False
+
 class YMHTMembershipInline(admin.StackedInline):
     fields = ('ymht' , 'center' , 'age_group' , 'role', 'since', 'till', 'is_active')
     model = Membership
+    formset = RequiredFormSet
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if request.user.is_superuser:
             return super(YMHTMembershipInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
         if not Profile.objects.filter(user=request.user).exists():
-            print "Does not exist"
+#             print "Does not exist"
             return super(YMHTMembershipInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
         current_profile = Profile.objects.get(user=request.user)
@@ -51,7 +59,6 @@ class YMHTMembershipInline(admin.StackedInline):
         current_roles = []
         for member in current_members:
             if member.is_active:
-                print member.center
                 current_centers_pk.append(member.center.pk)
                 current_age_group_pk.append(member.age_group.pk)
                 current_roles.append(member.role.level)
@@ -70,37 +77,41 @@ class YMHTMembershipInline(admin.StackedInline):
         return super(YMHTMembershipInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
     extra = 1
 
-    # def get_readonly_fields(self, request, obj=None):
-    #     if not obj.is_active:
-    #         return ('center' , 'age_group' , 'role', 'since', 'till', 'is_active')
-    #     else:
-    #         return []
-
     def queryset(self, request):
         qs = super(YMHTMembershipInline, self).queryset(request)
         if request.user.is_superuser:
             return qs
-
+        
         if not Profile.objects.filter(user=request.user).exists():
             return Membership.objects.none()
         current_profile = Profile.objects.get(user=request.user)
         
         if not Membership.objects.filter(ymht=current_profile).exists():
             return Membership.objects.none()
-
+        
         current_members = Membership.objects.filter(ymht=current_profile)
         current_centers = []
         current_age_groups = []
         current_roles = []
+# TODO: Known issue: In case of a MHT with multiple memberships, e.g. earlier
+# was in Borivali say from 2013 - 14, and then shifted to S. City. Then both the
+# coordinators should be able to view his info. But, on opening the profile, the
+# other centers membership should appear as read-only. Otherwise, if kept
+# editable then the profile cannot be saved because the drop down for the
+# Borivali coordinator has been filtered to show only Borivali in the centre
+# options, and that would change the MHT's details, which we don't want.
+        
         for member in current_members:
             if member.is_active:
+                current_roles.append(member.role.level)
                 current_centers.append(member.center)
                 current_age_groups.append(member.age_group)
-                current_roles.append(member.role.level)
+        level_filtered_qs = qs.filter(role__level__lt=max(current_roles))
+        return level_filtered_qs.filter(center__in=current_centers, age_group__in=current_age_groups)
+# For clarification on how to operate on list of Querysets, please visit:
+# http://simeonfranklin.com/blog/2011/jun/14/best-way-or-list-django-orm-q-objects/
 
-        return qs.filter(is_active=True)
-# readonly_fields = ('center',)
-
+        
 #     def formfield_for_foreignkey(self, db_field, request, **kwargs):
 #         if request.user.is_superuser:
 #             return super(YMHTMembershipInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
@@ -138,7 +149,6 @@ class GNCSewaDetailsInline(admin.StackedInline):
     model = GNCSewaDetails
     extra = 1
 
-
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ('first_name', 'last_name', 'date_of_birth', 'gnan_date')
     list_filter = ('first_name',)
@@ -154,7 +164,8 @@ class ProfileAdmin(admin.ModelAdmin):
         LocalEventSewaDetailsInline,
         GNCSewaDetailsInline,
     ]
-
+#     TODO: Right now, in User, all the usernames list comes. But in future we should filter this down.
+#     How to do this is a good question. Ideas would be appreciated
     def queryset(self, request):
         qs = super(ProfileAdmin, self).queryset(request)
         if request.user.is_superuser:
@@ -165,7 +176,7 @@ class ProfileAdmin(admin.ModelAdmin):
         current_profile = Profile.objects.get(user=request.user)
         
         if not Membership.objects.filter(ymht=current_profile).exists():
-            return Profile.objects.get(user=request.user)
+            return Profile.objects.none()
         
         current_members = Membership.objects.filter(ymht=current_profile)
         current_centers = []
@@ -180,22 +191,17 @@ class ProfileAdmin(admin.ModelAdmin):
 # For clarification on how to operate on list of Querysets, please visit:
 # http://simeonfranklin.com/blog/2011/jun/14/best-way-or-list-django-orm-q-objects/
         for i,item in enumerate(current_roles):
-            if current_roles[i] > 2:
+            if current_roles[i]>2:
                 memberships.append(Membership.objects.filter(center=current_centers[i],
                     age_group=current_age_groups[i], role__level__lte=current_roles[i]))
             else:
                 memberships.append(Membership.objects.filter(center=current_centers[i],
                     age_group=current_age_groups[i], role__level__lt=current_roles[i]))
+
         #Filtered the queryset twice based on age_group & center
         # filtered_qs = qs.filter(membership__in=memberships)
-        qs = qs.filter(membership__in=reduce(OR, memberships))
+        qs =  qs.filter(membership__in=reduce(OR, memberships))
         return qs.distinct()
-    #extra = 1       
-
-      
+    #extra = 1            
 
 admin.site.register(Profile, ProfileAdmin)
-
-
-
-

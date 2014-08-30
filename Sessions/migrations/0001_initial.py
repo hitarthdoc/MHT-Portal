@@ -12,49 +12,59 @@ class Migration(SchemaMigration):
         db.create_table(u'Sessions_newsession', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=25)),
-            ('age_group', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['masters.AgeGroup'], null=True)),
             ('description', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
             ('event_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['masters.SessionType'])),
-            ('start_date', self.gf('django.db.models.fields.DateField')()),
-            ('start_time', self.gf('django.db.models.fields.TimeField')()),
-            ('end_date', self.gf('django.db.models.fields.DateField')()),
-            ('end_time', self.gf('django.db.models.fields.TimeField')()),
+            ('start_date', self.gf('django.db.models.fields.DateField')(default=datetime.datetime(2014, 8, 28, 0, 0))),
+            ('start_time', self.gf('django.db.models.fields.TimeField')(default=datetime.datetime.now)),
+            ('end_date', self.gf('django.db.models.fields.DateField')(default=datetime.datetime(2014, 8, 28, 0, 0))),
+            ('end_time', self.gf('django.db.models.fields.TimeField')(default=datetime.datetime.now)),
             ('location', self.gf('django.db.models.fields.CharField')(max_length=25)),
-            ('sms_content', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
-            ('email_content', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
+            ('sms_content', self.gf('django.db.models.fields.TextField')(max_length=160, null=True, blank=True)),
+            ('email_subject', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
+            ('email_body', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
+            ('created_by', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], null=True)),
+            ('approved', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
         db.send_create_signal(u'Sessions', ['NewSession'])
+
+        # Adding M2M table for field center_name on 'NewSession'
+        m2m_table_name = db.shorten_name(u'Sessions_newsession_center_name')
+        db.create_table(m2m_table_name, (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('newsession', models.ForeignKey(orm[u'Sessions.newsession'], null=False)),
+            ('center', models.ForeignKey(orm[u'masters.center'], null=False))
+        ))
+        db.create_unique(m2m_table_name, ['newsession_id', 'center_id'])
+
+        # Adding M2M table for field age_group on 'NewSession'
+        m2m_table_name = db.shorten_name(u'Sessions_newsession_age_group')
+        db.create_table(m2m_table_name, (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('newsession', models.ForeignKey(orm[u'Sessions.newsession'], null=False)),
+            ('agegroup', models.ForeignKey(orm[u'masters.agegroup'], null=False))
+        ))
+        db.create_unique(m2m_table_name, ['newsession_id', 'agegroup_id'])
 
         # Adding model 'Report'
         db.create_table(u'Sessions_report', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('session_name', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['Sessions.NewSession'])),
-            ('date', self.gf('django.db.models.fields.DateField')()),
-            ('place', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('Duration', self.gf('django.db.models.fields.IntegerField')()),
-            ('improvement', self.gf('django.db.models.fields.TextField')()),
-            ('category', self.gf('django.db.models.fields.IntegerField')()),
+            ('improvement', self.gf('django.db.models.fields.TextField')(blank=True)),
+            ('category', self.gf('django.db.models.fields.CharField')(max_length=2, blank=True)),
             ('attachment', self.gf('django.db.models.fields.files.FileField')(max_length=100, null=True, blank=True)),
+            ('created_by', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], null=True)),
+            ('approved', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
         db.send_create_signal(u'Sessions', ['Report'])
-
-        # Adding M2M table for field center_name on 'Report'
-        m2m_table_name = db.shorten_name(u'Sessions_report_center_name')
-        db.create_table(m2m_table_name, (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('report', models.ForeignKey(orm[u'Sessions.report'], null=False)),
-            ('center', models.ForeignKey(orm[u'masters.center'], null=False))
-        ))
-        db.create_unique(m2m_table_name, ['report_id', 'center_id'])
 
         # Adding model 'SessionFlow'
         db.create_table(u'Sessions_sessionflow', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('session', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['Sessions.Report'], null=True)),
-            ('time', self.gf('django.db.models.fields.CharField')(max_length=255, null=True)),
-            ('activity', self.gf('django.db.models.fields.CharField')(max_length=50)),
-            ('description', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('details', self.gf('django.db.models.fields.TextField')()),
+            ('time', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
+            ('activity', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['masters.Activities'])),
+            ('description', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
+            ('details', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
         ))
         db.send_create_signal(u'Sessions', ['SessionFlow'])
 
@@ -63,7 +73,7 @@ class Migration(SchemaMigration):
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('session', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['Sessions.Report'])),
             ('title', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('category', self.gf('django.db.models.fields.IntegerField')()),
+            ('category', self.gf('django.db.models.fields.CharField')(max_length=2, null=True, blank=True)),
             ('attachment', self.gf('django.db.models.fields.files.FileField')(max_length=100, null=True, blank=True)),
         ))
         db.send_create_signal(u'Sessions', ['SessionMedia'])
@@ -91,25 +101,28 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal(u'Sessions', ['CoordinatorsAttendance'])
 
-        # Adding M2M table for field coordinators on 'CoordinatorsAttendance'
-        m2m_table_name = db.shorten_name(u'Sessions_coordinatorsattendance_coordinators')
+        # Adding M2M table for field coords on 'CoordinatorsAttendance'
+        m2m_table_name = db.shorten_name(u'Sessions_coordinatorsattendance_coords')
         db.create_table(m2m_table_name, (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
             ('coordinatorsattendance', models.ForeignKey(orm[u'Sessions.coordinatorsattendance'], null=False)),
-            ('coordinator', models.ForeignKey(orm[u'masters.coordinator'], null=False))
+            ('profile', models.ForeignKey(orm[u'profile.profile'], null=False))
         ))
-        db.create_unique(m2m_table_name, ['coordinatorsattendance_id', 'coordinator_id'])
+        db.create_unique(m2m_table_name, ['coordinatorsattendance_id', 'profile_id'])
 
 
     def backwards(self, orm):
         # Deleting model 'NewSession'
         db.delete_table(u'Sessions_newsession')
 
+        # Removing M2M table for field center_name on 'NewSession'
+        db.delete_table(db.shorten_name(u'Sessions_newsession_center_name'))
+
+        # Removing M2M table for field age_group on 'NewSession'
+        db.delete_table(db.shorten_name(u'Sessions_newsession_age_group'))
+
         # Deleting model 'Report'
         db.delete_table(u'Sessions_report')
-
-        # Removing M2M table for field center_name on 'Report'
-        db.delete_table(db.shorten_name(u'Sessions_report_center_name'))
 
         # Deleting model 'SessionFlow'
         db.delete_table(u'Sessions_sessionflow')
@@ -126,8 +139,8 @@ class Migration(SchemaMigration):
         # Deleting model 'CoordinatorsAttendance'
         db.delete_table(u'Sessions_coordinatorsattendance')
 
-        # Removing M2M table for field coordinators on 'CoordinatorsAttendance'
-        db.delete_table(db.shorten_name(u'Sessions_coordinatorsattendance_coordinators'))
+        # Removing M2M table for field coords on 'CoordinatorsAttendance'
+        db.delete_table(db.shorten_name(u'Sessions_coordinatorsattendance_coords'))
 
 
     models = {
@@ -139,50 +152,52 @@ class Migration(SchemaMigration):
         },
         u'Sessions.coordinatorsattendance': {
             'Meta': {'object_name': 'CoordinatorsAttendance'},
-            'coordinators': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['masters.Coordinator']", 'null': 'True', 'symmetrical': 'False'}),
+            'coords': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['profile.Profile']", 'null': 'True', 'symmetrical': 'False'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'session': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['Sessions.Report']", 'null': 'True'})
         },
         u'Sessions.newsession': {
             'Meta': {'object_name': 'NewSession'},
-            'age_group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['masters.AgeGroup']", 'null': 'True'}),
+            'age_group': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['masters.AgeGroup']", 'null': 'True', 'symmetrical': 'False'}),
+            'approved': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'center_name': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['masters.Center']", 'symmetrical': 'False'}),
+            'created_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'null': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'email_content': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'end_date': ('django.db.models.fields.DateField', [], {}),
-            'end_time': ('django.db.models.fields.TimeField', [], {}),
+            'email_body': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'email_subject': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'end_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2014, 8, 28, 0, 0)'}),
+            'end_time': ('django.db.models.fields.TimeField', [], {'default': 'datetime.datetime.now'}),
             'event_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['masters.SessionType']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'location': ('django.db.models.fields.CharField', [], {'max_length': '25'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '25'}),
-            'sms_content': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'start_date': ('django.db.models.fields.DateField', [], {}),
-            'start_time': ('django.db.models.fields.TimeField', [], {})
+            'sms_content': ('django.db.models.fields.TextField', [], {'max_length': '160', 'null': 'True', 'blank': 'True'}),
+            'start_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2014, 8, 28, 0, 0)'}),
+            'start_time': ('django.db.models.fields.TimeField', [], {'default': 'datetime.datetime.now'})
         },
         u'Sessions.report': {
-            'Duration': ('django.db.models.fields.IntegerField', [], {}),
             'Meta': {'object_name': 'Report'},
+            'approved': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'attachment': ('django.db.models.fields.files.FileField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'category': ('django.db.models.fields.IntegerField', [], {}),
-            'center_name': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['masters.Center']", 'symmetrical': 'False'}),
-            'date': ('django.db.models.fields.DateField', [], {}),
+            'category': ('django.db.models.fields.CharField', [], {'max_length': '2', 'blank': 'True'}),
+            'created_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'null': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'improvement': ('django.db.models.fields.TextField', [], {}),
-            'place': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'improvement': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'session_name': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['Sessions.NewSession']"})
         },
         u'Sessions.sessionflow': {
             'Meta': {'object_name': 'SessionFlow'},
-            'activity': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
-            'description': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'details': ('django.db.models.fields.TextField', [], {}),
+            'activity': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['masters.Activities']"}),
+            'description': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
+            'details': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'session': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['Sessions.Report']", 'null': 'True'}),
-            'time': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True'})
+            'time': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'})
         },
         u'Sessions.sessionmedia': {
             'Meta': {'object_name': 'SessionMedia'},
             'attachment': ('django.db.models.fields.files.FileField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'category': ('django.db.models.fields.IntegerField', [], {}),
+            'category': ('django.db.models.fields.CharField', [], {'max_length': '2', 'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'session': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['Sessions.Report']"}),
             'title': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'})
@@ -223,6 +238,11 @@ class Migration(SchemaMigration):
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
+        u'masters.activities': {
+            'Meta': {'object_name': 'Activities'},
+            'activities': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
+        },
         u'masters.agegroup': {
             'Meta': {'object_name': 'AgeGroup'},
             'age_group': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
@@ -234,12 +254,11 @@ class Migration(SchemaMigration):
             'address_2': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'address_3': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'category': ('django.db.models.fields.IntegerField', [], {}),
+            'center_name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True'}),
             'city': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['masters.City']"}),
-            'coordinators': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['masters.Coordinator']", 'symmetrical': 'False'}),
             'established_since': ('django.db.models.fields.DateField', [], {}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'landmark': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'locality': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'zipcode': ('django.db.models.fields.CharField', [], {'max_length': '6'})
         },
         u'masters.city': {
@@ -247,15 +266,6 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'state': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['masters.State']"})
-        },
-        u'masters.coordinator': {
-            'Meta': {'object_name': 'Coordinator'},
-            'date_of_birth': ('django.db.models.fields.DateField', [], {}),
-            'first_name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'gnan_date': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'last_name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'null': 'True', 'blank': 'True'})
         },
         u'masters.hobby': {
             'Meta': {'object_name': 'Hobby'},
@@ -286,8 +296,9 @@ class Migration(SchemaMigration):
             'last_name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'mother_contact': ('django.db.models.fields.CharField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'}),
             'mother_name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'other_hobbies': ('django.db.models.fields.CharField', [], {'max_length': '50', 'blank': 'True'}),
             'profile_picture': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'null': 'True', 'blank': 'True'})
+            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['auth.User']", 'unique': 'True', 'null': 'True', 'blank': 'True'})
         }
     }
 

@@ -1,0 +1,13 @@
+Django==1.6.2
+Django-Select2==4.0.0
+Pillow==2.5.1
+South==1.0
+django-admin-bootstrapped==1.6.5
+django-celery==3.1.10
+django-dynamic-scraper==0.3.7
+django-mptt==0.6.0
+django-reversion==1.8.1
+django-suit==0.2.9
+django-suit-ckeditor==0.0.2
+django-suit-redactor==0.0.2
+virtualenv==1.11

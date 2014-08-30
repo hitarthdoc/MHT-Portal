@@ -2,6 +2,7 @@ from operator import __or__ as OR
 from django.contrib import admin
 from django.db import models
 from django.forms import TextInput, Textarea
+from django.forms import SelectMultiple
 from .models import *
 from profile.models import Membership, Profile, Center, Role
 
@@ -44,7 +45,19 @@ class AttendanceInline(admin.TabularInline):
 	extra = 1
 	max_num = 1
 	can_delete = False
+	formfield_overrides = { models.ManyToManyField: {'widget': SelectMultiple(attrs={'size':'10'})}, }
+	def get_readonly_fields(self, request, obj=None):
+		current_profile = Profile.objects.get(user=request.user)
+		if obj:
+			if (obj.approved is True) and (request.user is not obj.created_by):
+				return ('ymht',)
+			else:
+				return []
+		else:
+			return []
 
+# TODO: Change the size of manytomany widget because attendance manytomany field is very small 						
+# 		models.ManyToManyField: {'widget': SelectMultiple(attrs={'size':10})},}
 	# def get_readonly_fields(self, request, obj=None):
 	# 	if obj:
 	# 		if obj.approved == True:
@@ -56,11 +69,13 @@ class AttendanceInline(admin.TabularInline):
 
 	
 	def formfield_for_manytomany(self, db_field, request, **kwargs):
+#	If Profile for the current user does not exist, then  		
 		if not Profile.objects.filter(user=request.user).exists():
 			if db_field.name == 'ymht':
 				participant_or_helper = Role.objects.filter(level__lt=3)
 				part_members = Membership.objects.filter(role = participant_or_helper)
-				kwargs['queryset'] = part_members
+				participant_profiles = Profile.objects.filter(membership__in=part_members)
+				kwargs['queryset'] = participant_profiles.distinct()
 			return super(AttendanceInline, self).formfield_for_manytomany(db_field, request, **kwargs)
 
 		current_profile = Profile.objects.get(user=request.user)
@@ -74,7 +89,7 @@ class AttendanceInline(admin.TabularInline):
 
 		if db_field.name == 'ymht':
 			participant_or_helper = Role.objects.filter(level__lt=3)
-			part_members = Membership.objects.filter(role = participant_or_helper)
+			part_members = Membership.objects.filter(role = participant_or_helper, is_active=True)
 			part_members = part_members.filter(center__in=current_centers, age_group__in=current_age_groups)
 			participant_profiles = Profile.objects.filter(membership__in=part_members)
 			kwargs['queryset'] = participant_profiles.distinct()
@@ -86,7 +101,15 @@ class CoordAttendanceInline(admin.TabularInline):
 	max_num = 1
 	extra = 1
 	can_delete = False
-
+	def get_readonly_fields(self, request, obj=None):
+		if obj:
+			if (obj.approved is True) and (request.user is not obj.created_by):
+				return ('coords',)
+			else:
+				return []
+		else:
+			return []
+		
 	# def get_readonly_fields(self, request, obj=None):
 	# 	if obj:
 	# 		if obj.approved == True:
@@ -131,10 +154,14 @@ class ReportAdmin(admin.ModelAdmin):
 	
 	list_display = ('session_name', 'created_by', 'approved')
 	
+	# TODO: If the coordinator of the report opens the report, then it should not
+	# be read only. All other fields of other inlines e.g. Attendance, media should
+	# also be read only
+	
 	def get_readonly_fields(self, request, obj=None):
 		if obj:
-			if obj.approved == True:
-				return ('session_name', 'date', 'place', 'Duration', 'improvement', 'category', 'attachment', 'created_by')
+			if (obj.approved is True) and (request.user is not obj.created_by):
+				return ('session_name', 'improvement', 'category', 'attachment', 'created_by', 'approved')
 			else:
 				return []
 		else:
@@ -165,9 +192,8 @@ class ReportAdmin(admin.ModelAdmin):
 
 		filtered_qs = qs.filter(session_name__center_name__in=current_centers)
 		filtered_qs = filtered_qs.filter(session_name__age_group__in=current_age_groups)
-		if max(current_roles) > 2:
-			approved_qs = reduce(OR, [approved_qs, filtered_qs])
-			print str(approved_qs)
+# 		if max(current_roles) > 2:
+		approved_qs = reduce(OR, [approved_qs, filtered_qs])
 		return approved_qs
 
 

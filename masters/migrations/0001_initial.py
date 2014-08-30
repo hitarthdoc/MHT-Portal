@@ -18,6 +18,7 @@ class Migration(SchemaMigration):
         # Adding model 'Role'
         db.create_table(u'masters_role', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('level', self.gf('django.db.models.fields.IntegerField')(null=True)),
             ('role', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
         ))
         db.send_create_signal(u'masters', ['Role'])
@@ -28,6 +29,13 @@ class Migration(SchemaMigration):
             ('session_type', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
         ))
         db.send_create_signal(u'masters', ['SessionType'])
+
+        # Adding model 'Activities'
+        db.create_table(u'masters_activities', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('activities', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
+        ))
+        db.send_create_signal(u'masters', ['Activities'])
 
         # Adding model 'Experience'
         db.create_table(u'masters_experience', (
@@ -82,7 +90,7 @@ class Migration(SchemaMigration):
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('category', self.gf('django.db.models.fields.IntegerField')()),
             ('established_since', self.gf('django.db.models.fields.DateField')()),
-            ('locality', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('center_name', self.gf('django.db.models.fields.CharField')(max_length=255, null=True)),
             ('address_1', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('address_2', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
             ('address_3', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
@@ -92,14 +100,26 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal(u'masters', ['Center'])
 
-        # Adding M2M table for field coordinators on 'Center'
-        m2m_table_name = db.shorten_name(u'masters_center_coordinators')
-        db.create_table(m2m_table_name, (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('center', models.ForeignKey(orm[u'masters.center'], null=False)),
-            ('coordinator', models.ForeignKey(orm[u'masters.coordinator'], null=False))
+        # Adding model 'GlobalEvent'
+        db.create_table(u'masters_globalevent', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
         ))
-        db.create_unique(m2m_table_name, ['center_id', 'coordinator_id'])
+        db.send_create_signal(u'masters', ['GlobalEvent'])
+
+        # Adding model 'LocalEvent'
+        db.create_table(u'masters_localevent', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
+        ))
+        db.send_create_signal(u'masters', ['LocalEvent'])
+
+        # Adding model 'GNCSewa'
+        db.create_table(u'masters_gncsewa', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, null=True)),
+        ))
+        db.send_create_signal(u'masters', ['GNCSewa'])
 
 
     def backwards(self, orm):
@@ -111,6 +131,9 @@ class Migration(SchemaMigration):
 
         # Deleting model 'SessionType'
         db.delete_table(u'masters_sessiontype')
+
+        # Deleting model 'Activities'
+        db.delete_table(u'masters_activities')
 
         # Deleting model 'Experience'
         db.delete_table(u'masters_experience')
@@ -133,8 +156,14 @@ class Migration(SchemaMigration):
         # Deleting model 'Center'
         db.delete_table(u'masters_center')
 
-        # Removing M2M table for field coordinators on 'Center'
-        db.delete_table(db.shorten_name(u'masters_center_coordinators'))
+        # Deleting model 'GlobalEvent'
+        db.delete_table(u'masters_globalevent')
+
+        # Deleting model 'LocalEvent'
+        db.delete_table(u'masters_localevent')
+
+        # Deleting model 'GNCSewa'
+        db.delete_table(u'masters_gncsewa')
 
 
     models = {
@@ -174,6 +203,11 @@ class Migration(SchemaMigration):
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
+        u'masters.activities': {
+            'Meta': {'object_name': 'Activities'},
+            'activities': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
+        },
         u'masters.agegroup': {
             'Meta': {'object_name': 'AgeGroup'},
             'age_group': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
@@ -185,12 +219,11 @@ class Migration(SchemaMigration):
             'address_2': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'address_3': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'category': ('django.db.models.fields.IntegerField', [], {}),
+            'center_name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True'}),
             'city': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['masters.City']"}),
-            'coordinators': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['masters.Coordinator']", 'symmetrical': 'False'}),
             'established_since': ('django.db.models.fields.DateField', [], {}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'landmark': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'locality': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'zipcode': ('django.db.models.fields.CharField', [], {'max_length': '6'})
         },
         u'masters.city': {
@@ -213,6 +246,16 @@ class Migration(SchemaMigration):
             'experience': ('django.db.models.fields.CharField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
+        u'masters.globalevent': {
+            'Meta': {'object_name': 'GlobalEvent'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'})
+        },
+        u'masters.gncsewa': {
+            'Meta': {'object_name': 'GNCSewa'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True'})
+        },
         u'masters.hobby': {
             'Meta': {'object_name': 'Hobby'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -223,9 +266,15 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'job_type': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'})
         },
+        u'masters.localevent': {
+            'Meta': {'object_name': 'LocalEvent'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'})
+        },
         u'masters.role': {
             'Meta': {'object_name': 'Role'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'level': ('django.db.models.fields.IntegerField', [], {'null': 'True'}),
             'role': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'})
         },
         u'masters.sessiontype': {
