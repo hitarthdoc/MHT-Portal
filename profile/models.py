@@ -12,6 +12,7 @@ from masters.models import AgeGroup
 from masters.models import JobType
 from masters.models import Experience
 from masters.models import Role
+from masters.models import SubRole
 from masters.models import Hobby
 from masters.models import Center
 from masters.models import GlobalEvent
@@ -33,7 +34,7 @@ EVENT_CATEGORY_CHOICES = ((0, 'GNC Day'),
 					(6, 'Janma Jayanti'),
 					(7, 'Picnic'))
 
-class Profile(models.Model):
+class profile(models.Model):
   
     description = "Add/edit profiles of MHTs"
 
@@ -67,10 +68,10 @@ class Profile(models.Model):
         return '%s %s' % (self.first_name, self.last_name)
 
     # class Meta:
-    #   verbose_name_plural = "Profile"
+    #   verbose_name_plural = "profile"
    
 class YMHTMobile(models.Model):
-    profile = models.ForeignKey(Profile)
+    profile = models.ForeignKey(profile)
     mobile = models.CharField(max_length=10, validators=[RegexValidator(r'^[0-9]*$', 'Only numbers are allowed here.')])
     is_active = models.BooleanField(default=False)
   
@@ -78,7 +79,7 @@ class YMHTMobile(models.Model):
         verbose_name_plural = 'Mobile Details'
 
 class YMHTEmail(models.Model):
-    ymht = models.ForeignKey(Profile)
+    ymht = models.ForeignKey(profile)
     email = models.EmailField()
     is_active = models.BooleanField(default=False)
   
@@ -86,7 +87,7 @@ class YMHTEmail(models.Model):
         verbose_name_plural = 'Email Details'
 
 class YMHTAddress(models.Model):
-    ymht = models.ForeignKey(Profile)
+    ymht = models.ForeignKey(profile)
     address_1 = models.CharField(max_length=255)
     address_2 = models.CharField(max_length=255, blank=True, null=True)
     address_3 = models.CharField(max_length=255, blank=True, null=True)
@@ -95,6 +96,8 @@ class YMHTAddress(models.Model):
     zipcode = models.CharField(max_length=6, validators=[RegexValidator(r'^[0-9]*$', 'Only 6 numbers are allowed here.')])
     current_address = models.BooleanField(default=False)
   
+    def __unicode__(self):
+        return '%s' % (self.standard_or_Degree)
     class Meta:
         verbose_name_plural = 'Address Details'
 
@@ -102,7 +105,7 @@ class YMHTEducation(models.Model):
     Edu_choices = (
 	  ('school', "School"),
 	  ('college', "College"),)
-    ymht = models.ForeignKey(Profile)
+    ymht = models.ForeignKey(profile)
 
     type_1 = models.CharField(choices=Edu_choices, max_length=256)
     school_or_College = models.CharField(max_length=255)
@@ -126,7 +129,7 @@ EXPERIENCE_CHOICES = ((0, "FRESHER"),
 				(3, "3 YEAR"))
 
 class YMHTJob(models.Model):
-  ymht = models.ForeignKey(Profile)
+  ymht = models.ForeignKey(profile)
   jobtype = models.ForeignKey(JobType)
   experience = models.ForeignKey(Experience)
   company_name = models.CharField(max_length=255)
@@ -141,13 +144,11 @@ class YMHTJob(models.Model):
 	verbose_name_plural = 'Job Details'	
 
 class Membership(models.Model):
-  ROLE_CHOICES = ((1, 'Participant'),
-				  (2, 'Coordinator'),
-				  (3, 'Helper'))
-  ymht = models.ForeignKey(Profile)
+  ymht = models.ForeignKey(profile)
   center = models.ForeignKey(Center, null=True)
   age_group = models.ForeignKey(AgeGroup)
   role = models.ForeignKey(Role)
+  sub_role = models.ManyToManyField(SubRole, blank=True)
   since = models.DateField()
   till = models.DateField(blank=True, null=True)
   is_active = models.BooleanField(default=False)
@@ -159,7 +160,7 @@ class Membership(models.Model):
 class GlobalEventSewaDetails(models.Model):
   ATTENDED_DETAILS = ((1, 'All Days'), (2, 'Partial Days'))
   event = models.ForeignKey(GlobalEvent)
-  ymht = models.ForeignKey(Profile)
+  ymht = models.ForeignKey(profile)
   attended = models.IntegerField(choices=ATTENDED_DETAILS)
   attended_days = models.IntegerField(blank=True, null=True)
   comments = models.CharField(max_length=100, blank=True, null=True)
@@ -168,7 +169,7 @@ class GlobalEventSewaDetails(models.Model):
 	  verbose_name_plural = 'Global Event Sewa Details'
 
 class LocalEventSewaDetails(models.Model):
-  ymht = models.ForeignKey(Profile)
+  ymht = models.ForeignKey(profile)
   event = models.ForeignKey(LocalEvent)
   sewa_dept = models.CharField(max_length=255)
   sewa_name = models.CharField(max_length=255)
@@ -178,7 +179,7 @@ class LocalEventSewaDetails(models.Model):
 	  verbose_name_plural = 'Local Event Sewa Details'
 
 class GNCSewaDetails(models.Model):
-  ymht = models.ForeignKey(Profile)
+  ymht = models.ForeignKey(profile)
   name = models.ForeignKey(GNCSewa, null=True)
   project_responsible = models.CharField(max_length=255)
   comments = models.CharField(max_length=100, blank=True, null=True)

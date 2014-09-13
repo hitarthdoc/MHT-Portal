@@ -2,10 +2,11 @@ from django.contrib import admin
 # Please refer to this site for explanation of why this is done:
 from django.db.models import Q
 from operator import __or__ as OR
+from itertools import chain
 # http://simeonfranklin.com/blog/2011/jun/14/best-way-or-list-django-orm-q-objects/
-from profile.models import Membership, Center, Profile
+from profile.models import Membership, Center, profile
 from masters.models import Role
-from .models import (Profile, YMHTMobile,
+from .models import (profile, YMHTMobile,
                     YMHTEmail, YMHTAddress, YMHTEducation, YMHTJob,
                     Membership,
                     GNCSewaDetails, LocalEventSewaDetails, GlobalEventSewaDetails)
@@ -40,18 +41,24 @@ class RequiredFormSet(forms.models.BaseInlineFormSet):
         self.forms[0].empty_permitted = False
 
 class YMHTMembershipInline(admin.StackedInline):
-    fields = ('ymht' , 'center' , 'age_group' , 'role', 'since', 'till', 'is_active')
+    # fields = ('ymht' , 'center' , 'age_group' , 'role', 'since', 'till', 'is_active')
     model = Membership
     formset = RequiredFormSet
+#     def get_readonly_fields(self, request, obj=None):
+#         if request.user.is_superuser:
+#             return []
+# # TODO: If the profile being viewed is one's own, then the membership field should be shown as read only        
+#         return ('sub_role') #self.readonly_fields + self.fields
+
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if request.user.is_superuser:
             return super(YMHTMembershipInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
-        if not Profile.objects.filter(user=request.user).exists():
+        if not profile.objects.filter(user=request.user).exists():
 #             print "Does not exist"
             return super(YMHTMembershipInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
-        current_profile = Profile.objects.get(user=request.user)
+        current_profile = profile.objects.get(user=request.user)
         current_members = Membership.objects.filter(ymht=current_profile)
         #DEBUG: print current_members 
         current_centers_pk = []
@@ -69,7 +76,10 @@ class YMHTMembershipInline(admin.StackedInline):
         if db_field.name == 'age_group':
             kwargs['queryset'] = AgeGroup.objects.filter(pk__in=current_age_group_pk)
         if db_field.name == 'role':
-            kwargs['queryset'] = Role.objects.filter(level__lt=max(current_roles))
+            try:
+                kwargs['queryset'] = Role.objects.filter(level__lt=max(current_roles))
+            except:
+                kwargs['queryset'] = Role.objects.none()
         #permission for role to be decide later
 
         # if db_field.name == 'role':
@@ -77,14 +87,23 @@ class YMHTMembershipInline(admin.StackedInline):
         return super(YMHTMembershipInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
     extra = 1
 
+    def get_formset(self, request, obj=None, **kwargs):
+        self.exclude = []
+        if not request.user.is_superuser:
+            self.exclude.append('sub_role')
+            print 'Hi'
+        return super(YMHTMembershipInline, self).get_formset(request, obj, **kwargs)
+
+# TODO: Fetch subrole fields based on selection in role
+
     def queryset(self, request):
         qs = super(YMHTMembershipInline, self).queryset(request)
         if request.user.is_superuser:
             return qs
         
-        if not Profile.objects.filter(user=request.user).exists():
+        if not profile.objects.filter(user=request.user).exists():
             return Membership.objects.none()
-        current_profile = Profile.objects.get(user=request.user)
+        current_profile = profile.objects.get(user=request.user)
         
         if not Membership.objects.filter(ymht=current_profile).exists():
             return Membership.objects.none()
@@ -115,11 +134,11 @@ class YMHTMembershipInline(admin.StackedInline):
 #     def formfield_for_foreignkey(self, db_field, request, **kwargs):
 #         if request.user.is_superuser:
 #             return super(YMHTMembershipInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
-# # If Profile for current user does not exist, then what to do?
-#         if not Profile.objects.filter(user=request.user).exists():
+# # If profile for current user does not exist, then what to do?
+#         if not profile.objects.filter(user=request.user).exists():
 #             return super(YMHTMembershipInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
-#         current_profile = Profile.objects.get(user=request.user)
+#         current_profile = profile.objects.get(user=request.user)
 #         current_members = Membership.objects.filter(ymht=current_profile)
 #         current_centers_pk = []
 #         current_age_group_pk = []
@@ -149,10 +168,10 @@ class GNCSewaDetailsInline(admin.StackedInline):
     model = GNCSewaDetails
     extra = 1
 
-class ProfileAdmin(admin.ModelAdmin):
+class profileAdmin(admin.ModelAdmin):
     list_display = ('first_name', 'last_name', 'date_of_birth', 'gnan_date')
     list_filter = ('first_name',)
-    search_fields = ('first_name','last_name')
+    search_fields = ('first_name','last_name',)
     inlines = [
         YMHTMobileInline,
         YMHTEmailInline,
@@ -167,16 +186,16 @@ class ProfileAdmin(admin.ModelAdmin):
 #     TODO: Right now, in User, all the usernames list comes. But in future we should filter this down.
 #     How to do this is a good question. Ideas would be appreciated
     def queryset(self, request):
-        qs = super(ProfileAdmin, self).queryset(request)
+        qs = super(profileAdmin, self).queryset(request)
         if request.user.is_superuser:
             return qs
 
-        if not Profile.objects.filter(user=request.user).exists():
-            return Profile.objects.none()
-        current_profile = Profile.objects.get(user=request.user)
+        if not profile.objects.filter(user=request.user).exists():
+            return profile.objects.none()
+        current_profile = profile.objects.get(user=request.user)
         
         if not Membership.objects.filter(ymht=current_profile).exists():
-            return Profile.objects.none()
+            return profile.objects.none()
         
         current_members = Membership.objects.filter(ymht=current_profile)
         current_centers = []
@@ -200,8 +219,10 @@ class ProfileAdmin(admin.ModelAdmin):
 
         #Filtered the queryset twice based on age_group & center
         # filtered_qs = qs.filter(membership__in=memberships)
-        qs =  qs.filter(membership__in=reduce(OR, memberships))
+        qs = qs.filter(membership__in=reduce(OR, memberships))
         return qs.distinct()
     #extra = 1            
-
-admin.site.register(Profile, ProfileAdmin)
+    def get_formsets(self, request, obj=None):
+        for inline in self.get_inline_instances(request, obj):
+            yield inline.get_formset(request, obj)
+admin.site.register(profile, profileAdmin)

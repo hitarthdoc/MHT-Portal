@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from profile.models import Center
-from profile.models import Profile
+from profile.models import profile
 from masters.models import SessionType
 from masters.models import AgeGroup
 from masters.models import Activities
@@ -28,7 +28,11 @@ class NewSession(models.Model):
 	# AGE_GROUP_CHOICES = ((1, '13 to 16'), (2, '17 to 21'), (3, '13 to 21'), (4, '21 to 30'))
 
 	def get_default_created_by():
-		return Profile.objects.get(id=1)
+		try:
+			return User.objects.get(id=1)
+		except:
+			return User.objects.none()
+			
 
 	name = models.CharField(max_length=25)
 	center_name = models.ManyToManyField(Center)
@@ -64,9 +68,9 @@ class Report(models.Model):
 	
 	def get_default_created_by():
 		try:
-			return Profile.objects.get(id=1)
+			return profile.objects.get(id=1)
 		except:
-			return
+			return profile.objects.none()
 
 	HOURS_CHOICES = ((1, '1 Hour'), (2, '2 Hour'), (3, '3 Hour'), (4, '4 Hour'), (5, '5 Hour'), (6, '6 Hour'))
 	MIN_CHOICES = ((1, '0 Min'), (2, '15 Min'), (3, '30 Min'), (4, '45 Min'))
@@ -92,7 +96,6 @@ class Report(models.Model):
 	created_by = models.ForeignKey(User, default=get_default_created_by, null=True)
 	approved = models.BooleanField(default=False)
 
-
 	def __unicode__(self):
 		return '%s' % (self.session_name)
 
@@ -112,37 +115,31 @@ class SessionFlow(models.Model):
 		
 class SessionMedia(models.Model):
 
-	def get_default_category():
-		try:
-			return Profile.objects.get(id=1)
-		except:
-			return
-
 	session = models.ForeignKey(Report)
 	title = models.CharField(max_length=100, blank=True, null=True)
 
 	CATEGORY_CHOICES = (('P', 'Photo'),
-					  	('v', 'Video'),
+					  	('V', 'Video'),
 					  	('O', 'Other'))
 
-	category = models.CharField(choices=CATEGORY_CHOICES, max_length=2, null=True, blank=True, default=get_default_category)
+	category = models.CharField(choices=CATEGORY_CHOICES, max_length=2, null=True, blank=True,)
 	attachment = models.FileField(upload_to=session_media_content_file_name, blank=True, null=True)
 
 	class Meta:
 		verbose_name_plural = "Session Media"
 		
 class Attendance(models.Model):
-	#TODO: Change wherever there is ymht to either Profile or MHT for further expansion
-	ymht = models.ManyToManyField(Profile, null=True, verbose_name='MHTs')
+	#TODO: Change wherever there is ymht to either profile or MHT for further expansion
+	ymht = models.ManyToManyField(profile, null=True, verbose_name='MHTs')
 	session = models.ForeignKey(Report, null=True)
 	class Meta:
 		verbose_name_plural = "Attendance"
 
 class CoordinatorsAttendance(models.Model):
 
-	coords = models.ManyToManyField(Profile, null=True, verbose_name='Coordinators')
+	coords = models.ManyToManyField(profile, null=True, verbose_name='Coordinators')
 
-	# coordinators = models.ManyToManyField(Profile, null=True)
+	# coordinators = models.ManyToManyField(profile, null=True)
 	session = models.ForeignKey(Report, null=True)
 	class Meta:
 		verbose_name_plural = "Coordinator's Attendance"

@@ -22,6 +22,13 @@ class Role(models.Model):
 	def __unicode__(self):
 		return '%s' % (self.role)
 
+class SubRole(models.Model):
+	role = models.ForeignKey(Role)
+	sub_role = models.CharField(max_length=52)
+
+	def __unicode__(self):
+		return '%s - %s' %(self.sub_role, self.role)
+		
 class SessionType(models.Model):
 
 	session_type = models.CharField(blank=True, null=False, max_length=255)
@@ -89,7 +96,7 @@ class Hobby(models.Model):
 		return '%s' % (self.title)
 
 	class Meta:
-		verbose_name_plural = 'Hobby'
+		verbose_name_plural = 'Hobbies'
 
 
 # class Coordinator(models.Model):

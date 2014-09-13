@@ -14,9 +14,9 @@ class Migration(SchemaMigration):
             ('name', self.gf('django.db.models.fields.CharField')(max_length=25)),
             ('description', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
             ('event_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['masters.SessionType'])),
-            ('start_date', self.gf('django.db.models.fields.DateField')(default=datetime.datetime(2014, 8, 28, 0, 0))),
+            ('start_date', self.gf('django.db.models.fields.DateField')(default=datetime.datetime(2014, 9, 5, 0, 0))),
             ('start_time', self.gf('django.db.models.fields.TimeField')(default=datetime.datetime.now)),
-            ('end_date', self.gf('django.db.models.fields.DateField')(default=datetime.datetime(2014, 8, 28, 0, 0))),
+            ('end_date', self.gf('django.db.models.fields.DateField')(default=datetime.datetime(2014, 9, 5, 0, 0))),
             ('end_time', self.gf('django.db.models.fields.TimeField')(default=datetime.datetime.now)),
             ('location', self.gf('django.db.models.fields.CharField')(max_length=25)),
             ('sms_content', self.gf('django.db.models.fields.TextField')(max_length=160, null=True, blank=True)),
@@ -52,7 +52,7 @@ class Migration(SchemaMigration):
             ('improvement', self.gf('django.db.models.fields.TextField')(blank=True)),
             ('category', self.gf('django.db.models.fields.CharField')(max_length=2, blank=True)),
             ('attachment', self.gf('django.db.models.fields.files.FileField')(max_length=100, null=True, blank=True)),
-            ('created_by', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], null=True)),
+            ('created_by', self.gf('django.db.models.fields.related.ForeignKey')(default=[], to=orm['auth.User'], null=True)),
             ('approved', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
         db.send_create_signal(u'Sessions', ['Report'])
@@ -148,11 +148,11 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'Attendance'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'session': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['Sessions.Report']", 'null': 'True'}),
-            'ymht': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['profile.Profile']", 'null': 'True', 'symmetrical': 'False'})
+            'ymht': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['profile.profile']", 'null': 'True', 'symmetrical': 'False'})
         },
         u'Sessions.coordinatorsattendance': {
             'Meta': {'object_name': 'CoordinatorsAttendance'},
-            'coords': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['profile.Profile']", 'null': 'True', 'symmetrical': 'False'}),
+            'coords': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['profile.profile']", 'null': 'True', 'symmetrical': 'False'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'session': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['Sessions.Report']", 'null': 'True'})
         },
@@ -165,14 +165,14 @@ class Migration(SchemaMigration):
             'description': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'email_body': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'email_subject': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'end_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2014, 8, 28, 0, 0)'}),
+            'end_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2014, 9, 5, 0, 0)'}),
             'end_time': ('django.db.models.fields.TimeField', [], {'default': 'datetime.datetime.now'}),
             'event_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['masters.SessionType']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'location': ('django.db.models.fields.CharField', [], {'max_length': '25'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '25'}),
             'sms_content': ('django.db.models.fields.TextField', [], {'max_length': '160', 'null': 'True', 'blank': 'True'}),
-            'start_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2014, 8, 28, 0, 0)'}),
+            'start_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2014, 9, 5, 0, 0)'}),
             'start_time': ('django.db.models.fields.TimeField', [], {'default': 'datetime.datetime.now'})
         },
         u'Sessions.report': {
@@ -180,7 +180,7 @@ class Migration(SchemaMigration):
             'approved': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'attachment': ('django.db.models.fields.files.FileField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'category': ('django.db.models.fields.CharField', [], {'max_length': '2', 'blank': 'True'}),
-            'created_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'null': 'True'}),
+            'created_by': ('django.db.models.fields.related.ForeignKey', [], {'default': '[]', 'to': u"orm['auth.User']", 'null': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'improvement': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'session_name': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['Sessions.NewSession']"})
@@ -284,7 +284,7 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'})
         },
         u'profile.profile': {
-            'Meta': {'object_name': 'Profile'},
+            'Meta': {'object_name': 'profile'},
             'date_of_birth': ('django.db.models.fields.DateField', [], {}),
             'father_contact': ('django.db.models.fields.CharField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'}),
             'father_name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),

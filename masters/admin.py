@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import AgeGroup, Role, SessionType, Experience, JobType, City, State, Hobby, Center, GlobalEvent, LocalEvent, GNCSewa, Activities
+from .models import AgeGroup, Role, SubRole, SessionType, Experience, JobType, City, State, Hobby, Center, GlobalEvent, LocalEvent, GNCSewa, Activities
 from django_countries.fields import CountryField
 
 admin.site.register(AgeGroup)
@@ -15,3 +15,4 @@ admin.site.register(GlobalEvent)
 admin.site.register(LocalEvent)
 admin.site.register(GNCSewa)
 admin.site.register(Activities)
+admin.site.register(SubRole)

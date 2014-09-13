@@ -33,6 +33,11 @@
 *.jpg
 *.png
 
+# Compressed files #
+######################
+
+*.rar
+
 # OS generated files #
 ######################
 .DS_Store

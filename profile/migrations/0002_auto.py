@@ -8,168 +8,19 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'profile'
-        db.create_table(u'profile_profile', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('user', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True, null=True, blank=True)),
-            ('first_name', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('last_name', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('gender', self.gf('django.db.models.fields.CharField')(default='male', max_length=25)),
-            ('date_of_birth', self.gf('django.db.models.fields.DateField')()),
-            ('other_hobbies', self.gf('django.db.models.fields.CharField')(max_length=50, blank=True)),
-            ('gnan_date', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-            ('father_name', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('father_contact', self.gf('django.db.models.fields.CharField')(max_length=10, null=True, blank=True)),
-            ('mother_name', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('mother_contact', self.gf('django.db.models.fields.CharField')(max_length=10, null=True, blank=True)),
-            ('profile_picture', self.gf('django.db.models.fields.files.ImageField')(max_length=100, null=True, blank=True)),
-        ))
-        db.send_create_signal(u'profile', ['profile'])
-
-        # Adding M2M table for field hobby on 'profile'
-        m2m_table_name = db.shorten_name(u'profile_profile_hobby')
+        # Adding M2M table for field sub_role on 'Membership'
+        m2m_table_name = db.shorten_name(u'profile_membership_sub_role')
         db.create_table(m2m_table_name, (
             ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('profile', models.ForeignKey(orm[u'profile.profile'], null=False)),
-            ('hobby', models.ForeignKey(orm[u'masters.hobby'], null=False))
+            ('membership', models.ForeignKey(orm[u'profile.membership'], null=False)),
+            ('subrole', models.ForeignKey(orm[u'masters.subrole'], null=False))
         ))
-        db.create_unique(m2m_table_name, ['profile_id', 'hobby_id'])
-
-        # Adding model 'YMHTMobile'
-        db.create_table(u'profile_ymhtmobile', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('profile', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
-            ('mobile', self.gf('django.db.models.fields.CharField')(max_length=10)),
-            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
-        ))
-        db.send_create_signal(u'profile', ['YMHTMobile'])
-
-        # Adding model 'YMHTEmail'
-        db.create_table(u'profile_ymhtemail', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('ymht', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
-            ('email', self.gf('django.db.models.fields.EmailField')(max_length=75)),
-            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
-        ))
-        db.send_create_signal(u'profile', ['YMHTEmail'])
-
-        # Adding model 'YMHTAddress'
-        db.create_table(u'profile_ymhtaddress', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('ymht', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
-            ('address_1', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('address_2', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('address_3', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('landmark', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('city', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['masters.City'])),
-            ('zipcode', self.gf('django.db.models.fields.CharField')(max_length=6)),
-            ('current_address', self.gf('django.db.models.fields.BooleanField')(default=False)),
-        ))
-        db.send_create_signal(u'profile', ['YMHTAddress'])
-
-        # Adding model 'YMHTEducation'
-        db.create_table(u'profile_ymhteducation', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('ymht', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
-            ('type_1', self.gf('django.db.models.fields.CharField')(max_length=256)),
-            ('school_or_College', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('standard_or_Degree', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('other_Details', self.gf('django.db.models.fields.TextField')(null=True)),
-            ('year', self.gf('django.db.models.fields.CharField')(max_length=255)),
-        ))
-        db.send_create_signal(u'profile', ['YMHTEducation'])
-
-        # Adding model 'YMHTJob'
-        db.create_table(u'profile_ymhtjob', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('ymht', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
-            ('jobtype', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['masters.JobType'])),
-            ('experience', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['masters.Experience'])),
-            ('company_name', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('designation', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('current', self.gf('django.db.models.fields.BooleanField')()),
-        ))
-        db.send_create_signal(u'profile', ['YMHTJob'])
-
-        # Adding model 'Membership'
-        db.create_table(u'profile_membership', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('ymht', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
-            ('center', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['masters.Center'], null=True)),
-            ('age_group', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['masters.AgeGroup'])),
-            ('role', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['masters.Role'])),
-            ('since', self.gf('django.db.models.fields.DateField')()),
-            ('till', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
-        ))
-        db.send_create_signal(u'profile', ['Membership'])
-
-        # Adding model 'GlobalEventSewaDetails'
-        db.create_table(u'profile_globaleventsewadetails', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('event', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['masters.GlobalEvent'])),
-            ('ymht', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
-            ('attended', self.gf('django.db.models.fields.IntegerField')()),
-            ('attended_days', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
-            ('comments', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-        ))
-        db.send_create_signal(u'profile', ['GlobalEventSewaDetails'])
-
-        # Adding model 'LocalEventSewaDetails'
-        db.create_table(u'profile_localeventsewadetails', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('ymht', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
-            ('event', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['masters.LocalEvent'])),
-            ('sewa_dept', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('sewa_name', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('comments', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-        ))
-        db.send_create_signal(u'profile', ['LocalEventSewaDetails'])
-
-        # Adding model 'GNCSewaDetails'
-        db.create_table(u'profile_gncsewadetails', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('ymht', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
-            ('name', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['masters.GNCSewa'], null=True)),
-            ('project_responsible', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('comments', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-        ))
-        db.send_create_signal(u'profile', ['GNCSewaDetails'])
+        db.create_unique(m2m_table_name, ['membership_id', 'subrole_id'])
 
 
     def backwards(self, orm):
-        # Deleting model 'profile'
-        db.delete_table(u'profile_profile')
-
-        # Removing M2M table for field hobby on 'profile'
-        db.delete_table(db.shorten_name(u'profile_profile_hobby'))
-
-        # Deleting model 'YMHTMobile'
-        db.delete_table(u'profile_ymhtmobile')
-
-        # Deleting model 'YMHTEmail'
-        db.delete_table(u'profile_ymhtemail')
-
-        # Deleting model 'YMHTAddress'
-        db.delete_table(u'profile_ymhtaddress')
-
-        # Deleting model 'YMHTEducation'
-        db.delete_table(u'profile_ymhteducation')
-
-        # Deleting model 'YMHTJob'
-        db.delete_table(u'profile_ymhtjob')
-
-        # Deleting model 'Membership'
-        db.delete_table(u'profile_membership')
-
-        # Deleting model 'GlobalEventSewaDetails'
-        db.delete_table(u'profile_globaleventsewadetails')
-
-        # Deleting model 'LocalEventSewaDetails'
-        db.delete_table(u'profile_localeventsewadetails')
-
-        # Deleting model 'GNCSewaDetails'
-        db.delete_table(u'profile_gncsewadetails')
+        # Removing M2M table for field sub_role on 'Membership'
+        db.delete_table(db.shorten_name(u'profile_membership_sub_role'))
 
 
     models = {
@@ -275,6 +126,12 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'})
         },
+        u'masters.subrole': {
+            'Meta': {'object_name': 'SubRole'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'role': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['masters.Role']"}),
+            'sub_role': ('django.db.models.fields.CharField', [], {'max_length': '52'})
+        },
         u'profile.globaleventsewadetails': {
             'Meta': {'object_name': 'GlobalEventSewaDetails'},
             'attended': ('django.db.models.fields.IntegerField', [], {}),
@@ -309,6 +166,7 @@ class Migration(SchemaMigration):
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'role': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['masters.Role']"}),
             'since': ('django.db.models.fields.DateField', [], {}),
+            'sub_role': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['masters.SubRole']", 'symmetrical': 'False'}),
             'till': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'ymht': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['profile.profile']"})
         },
