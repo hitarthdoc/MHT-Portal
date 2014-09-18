@@ -105,7 +105,7 @@ class YMHTMembershipInline(admin.StackedInline):
             return Membership.objects.none()
         current_profile = profile.objects.get(user=request.user)
         
-        if not Membership.objects.filter(ymht=current_profile).exists():
+        if not Membership.objects.filter(ymht=current_profile, is_active=True).exists():
             return Membership.objects.none()
         
         current_members = Membership.objects.filter(ymht=current_profile)
@@ -194,7 +194,7 @@ class profileAdmin(admin.ModelAdmin):
             return profile.objects.none()
         current_profile = profile.objects.get(user=request.user)
         
-        if not Membership.objects.filter(ymht=current_profile).exists():
+        if not Membership.objects.filter(ymht=current_profile, is_active=True).exists():
             return profile.objects.none()
         
         current_members = Membership.objects.filter(ymht=current_profile)
