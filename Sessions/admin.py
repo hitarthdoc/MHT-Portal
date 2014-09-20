@@ -71,7 +71,7 @@ class AttendanceInline(admin.TabularInline):
 		if not profile.objects.filter(user=request.user).exists():
 			if db_field.name == 'ymht':
 				participant_or_helper = Role.objects.filter(level__lt=3)
-				part_members = Membership.objects.filter(role = participant_or_helper)
+				part_members = Membership.objects.filter(role__in = participant_or_helper)
 				participant_profiles = profile.objects.filter(membership__in=part_members)
 				kwargs['queryset'] = participant_profiles.distinct()
 			return super(AttendanceInline, self).formfield_for_manytomany(db_field, request, **kwargs)
@@ -87,7 +87,7 @@ class AttendanceInline(admin.TabularInline):
 
 		if db_field.name == 'ymht':
 			participant_or_helper = Role.objects.filter(level__lt=3)
-			part_members = Membership.objects.filter(role = participant_or_helper, is_active=True)
+			part_members = Membership.objects.filter(role__in = participant_or_helper, is_active=True)
 			part_members = part_members.filter(center__in=current_centers, age_group__in=current_age_groups)
 			participant_profiles = profile.objects.filter(membership__in=part_members)
 			kwargs['queryset'] = participant_profiles.distinct()
