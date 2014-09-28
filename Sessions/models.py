@@ -8,9 +8,8 @@ from masters.models import Activities
 # from django.core.exceptions import ValidationError
 
 from datetime import datetime
-# import datetime as dt
-# from datetime import time
 
+# import datetime as dt
 # def validate_time(value):
 # 	earliest_time = dt.time(9)
 # 	latest_time = dt.time(21)
@@ -32,7 +31,6 @@ class NewSession(models.Model):
 			return User.objects.get(id=1)
 		except:
 			return User.objects.none()
-			
 
 	name = models.CharField(max_length=25)
 	center_name = models.ManyToManyField(Center)
@@ -50,12 +48,12 @@ class NewSession(models.Model):
 	email_body = models.TextField(blank=True, null=True)
 	# Foreign key to coordinator
 	created_by = models.ForeignKey(User, default=get_default_created_by, null=True)
+	# last_editted_by = models.ForeignKey(User, default=get_default_created_by, null=True)
 	approved = models.BooleanField(default=False)
 
 	
 	def __unicode__(self):
-# TODO: This statement does not print the proper center name because it is a manytomany field
-# 		return '%s on %s at %s for %s.' % (self.name, self.start_date, self.location, self.center_name)
+# TODO: This statement does not print the proper center name because it is a manytomany field		
 		return '%s on %s at %s.' % (self.name, self.start_date, self.location)
 
 	# def __unicode__(self):

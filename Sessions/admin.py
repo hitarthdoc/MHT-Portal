@@ -6,6 +6,16 @@ from django.forms import CheckboxSelectMultiple, SelectMultiple
 from .models import *
 from profile.models import Membership, profile, Center, Role
 
+def get_current_user_details(user):
+	current_profile = profile.objects.get(user=user)
+	current_members = Membership.objects.filter(ymht=current_profile)
+	current_centers = []
+	current_age_groups = []
+	for member in current_members:
+		if member.is_active:
+			current_centers.append(member.center)
+			current_age_groups.append(member.age_group)
+	return current_profile, current_members, current_centers, current_age_groups
 
 class SessionFlowInline(admin.TabularInline):
 	model = SessionFlow
@@ -16,9 +26,10 @@ class SessionFlowInline(admin.TabularInline):
 	}
 
 	def get_readonly_fields(self, request, obj=None):
+		user_is_of_current_center = False
 		if obj:
 			if (obj.approved is True) and (request.user != obj.created_by):
-				return self.readonly_fields + self.fields#('session', 'time', 'activity', 'description', 'details')
+				return self.readonly_fields + ('session', 'time', 'activity', 'description', 'details')
 			else:
 				return []
 		else:
@@ -56,15 +67,6 @@ class AttendanceInline(admin.TabularInline):
 
 # TODO: Change the size of manytomany widget because attendance manytomany field is very small 						
 # 		models.ManyToManyField: {'widget': SelectMultiple(attrs={'size':10})},}
-	# def get_readonly_fields(self, request, obj=None):
-	# 	if obj:
-	# 		if obj.approved == True:
-	# 			return ('ymht', 'session')
-	# 		else:
-	# 			return []
-	# 	else:
-	# 		return []
-
 	
 	def formfield_for_manytomany(self, db_field, request, **kwargs):
 #	If profile for the current user does not exist, then  		
@@ -76,14 +78,7 @@ class AttendanceInline(admin.TabularInline):
 				kwargs['queryset'] = participant_profiles.distinct()
 			return super(AttendanceInline, self).formfield_for_manytomany(db_field, request, **kwargs)
 
-		current_profile = profile.objects.get(user=request.user)
-		current_members = Membership.objects.filter(ymht=current_profile)
-		current_centers = []
-		current_age_groups = []
-		for member in current_members:
-			if member.is_active:
-				current_centers.append(member.center)
-				current_age_groups.append(member.age_group)
+		current_profile,current_members,current_centers,current_age_groups = get_current_user_details(request.user)
 
 		if db_field.name == 'ymht':
 			participant_or_helper = Role.objects.filter(level__lt=3)
@@ -166,7 +161,7 @@ class ReportAdmin(admin.ModelAdmin):
 				return self.readonly_fields + ('session_name', 'improvement', 'category',
 					'attachment', 'created_by', 'approved')
 			else:
-				return []
+				return ['created_by']
 		else:
 			return []
 
@@ -177,11 +172,11 @@ class ReportAdmin(admin.ModelAdmin):
 
 		approved_qs = qs.filter(approved=True)
 		if not profile.objects.filter(user=request.user).exists():
-			return Report.objects.none()
+			return approved_qs
 		
 		current_profile = profile.objects.get(user=request.user)
 		if not Membership.objects.filter(ymht=current_profile).exists():
-			return Report.objects.none()
+			return approved_qs
 
 		current_members = Membership.objects.filter(ymht=current_profile)
 		current_centers = []
@@ -193,9 +188,10 @@ class ReportAdmin(admin.ModelAdmin):
 				current_age_groups.append(member.age_group)
 				current_roles.append(member.role.level)
 
-		filtered_qs = qs.filter(session_name__center_name__in=current_centers)
-		filtered_qs = filtered_qs.filter(session_name__age_group__in=current_age_groups)
-# 		if max(current_roles) > 2:
+		filtered_qs = qs.filter(session_name__center_name__in=current_centers,
+			session_name__age_group__in=current_age_groups)
+		# The queryset should include both approved reports from all centers
+		# and also report of one's own center
 		approved_qs = reduce(OR, [approved_qs, filtered_qs])
 		return approved_qs
 
@@ -230,14 +226,20 @@ class ReportAdmin(admin.ModelAdmin):
 		current_profile = profile.objects.get(user=request.user)
 		current_members = Membership.objects.filter(ymht=current_profile)
 		current_centers = []
+		current_age_groups = []
 		for member in current_members:
 			if member.is_active:
-				current_centers.append(member.center)    
+				current_centers.append(member.center)
+				current_age_groups.append(member.age_group)
 		if db_field.name == 'session_name':
-			temp = NewSession.objects.filter(approved=True)
-			kwargs['queryset'] = temp.filter(center_name__in=current_centers)
+			approved_sessions = NewSession.objects.filter(approved=True)
+			kwargs['queryset'] = approved_sessions.filter(center_name__in=current_centers,
+				age_group__in=current_age_groups)
 
 		if db_field.name == 'created_by':
+			kwargs['queryset'] = User.objects.filter(pk=request.user.pk)
+
+		if db_field.name == 'last_editted_by':
 			kwargs['queryset'] = User.objects.filter(pk=request.user.pk)
 
 		return super(ReportAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
@@ -269,6 +271,12 @@ class ReportAdmin(admin.ModelAdmin):
 
 class NewSessionAdmin(admin.ModelAdmin):
 	list_display = ('name', 'start_date', 'approved')
+	def get_readonly_fields(self, request, obj=None):
+		if obj:
+			return ["created_by"]
+		else:
+			return []
+
 	def queryset(self, request):
 		qs = super(NewSessionAdmin, self).queryset(request)
 		if request.user.is_superuser:
