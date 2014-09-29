@@ -150,7 +150,8 @@ class ReportAdmin(admin.ModelAdmin):
 	]
 	
 	list_display = ('session_name', 'created_by', 'approved')
-	
+	# list_filter = ('session_name',)
+	# search_fields = ('session_name','created_by')
 	# TODO: If the coordinator of the report opens the report, then it should not
 	# be read only. All other fields of other inlines e.g. Attendance, media should
 	# also be read only
@@ -270,7 +271,8 @@ class ReportAdmin(admin.ModelAdmin):
 	}
 
 class NewSessionAdmin(admin.ModelAdmin):
-	list_display = ('name', 'start_date', 'approved')
+	list_display = ('name', 'start_date', 'location','approved')
+	search_fields = ('name','location')
 	def get_readonly_fields(self, request, obj=None):
 		if obj:
 			return ["created_by"]

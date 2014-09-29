@@ -55,12 +55,10 @@ class YMHTMembershipInline(admin.StackedInline):
             return super(YMHTMembershipInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
         if not profile.objects.filter(user=request.user).exists():
-#             print "Does not exist"
             return super(YMHTMembershipInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
         current_profile = profile.objects.get(user=request.user)
         current_members = Membership.objects.filter(ymht=current_profile)
-        #DEBUG: print current_members 
         current_centers_pk = []
         current_age_group_pk = []
         current_roles = []
@@ -69,8 +67,7 @@ class YMHTMembershipInline(admin.StackedInline):
                 current_centers_pk.append(member.center.pk)
                 current_age_group_pk.append(member.age_group.pk)
                 current_roles.append(member.role.level)
-        # print "Length of centers:", len(current_members)
-        # print current_members
+
         if db_field.name == 'center':
             kwargs['queryset'] = Center.objects.filter(pk__in=current_centers_pk)
         if db_field.name == 'age_group':
@@ -91,7 +88,6 @@ class YMHTMembershipInline(admin.StackedInline):
         self.exclude = []
         if not request.user.is_superuser:
             self.exclude.append('sub_role')
-            print 'Hi'
         return super(YMHTMembershipInline, self).get_formset(request, obj, **kwargs)
 
 # TODO: Fetch subrole fields based on selection in role
@@ -153,7 +149,6 @@ class YMHTMembershipInline(admin.StackedInline):
 #         return super(YMHTMembershipInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
 class GlobalEventSewaDetailsInline(admin.StackedInline):
-    #fields = ('event', 'ymht' , 'coordinator', 'attended' , 'attended_days' , 'comments')
     model = GlobalEventSewaDetails
     extra = 1
 
@@ -170,7 +165,7 @@ class GNCSewaDetailsInline(admin.StackedInline):
 
 class profileAdmin(admin.ModelAdmin):
     list_display = ('first_name', 'last_name', 'date_of_birth', 'gnan_date')
-    list_filter = ('first_name',)
+    list_filter = ('first_name','hobby')
     search_fields = ('first_name','last_name',)
     inlines = [
         YMHTMobileInline,
@@ -221,7 +216,6 @@ class profileAdmin(admin.ModelAdmin):
         # filtered_qs = qs.filter(membership__in=memberships)
         qs = qs.filter(membership__in=reduce(OR, memberships))
         return qs.distinct()
-    #extra = 1            
     def get_formsets(self, request, obj=None):
         for inline in self.get_inline_instances(request, obj):
             yield inline.get_formset(request, obj)
