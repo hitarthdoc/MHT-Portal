@@ -51,7 +51,7 @@ class Activities(models.Model):
 
 class Experience(models.Model):
 
-	experience = models.CharField(blank=True, null=True, max_length=10)
+	experience = models.CharField(blank=True, null=True, max_length=63)
 
 
 	def __unicode__(self):
