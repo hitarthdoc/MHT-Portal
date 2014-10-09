@@ -190,7 +190,7 @@ class profileAdmin(admin.ModelAdmin):
         current_profile = profile.objects.get(user=request.user)
         
         if not Membership.objects.filter(ymht=current_profile, is_active=True).exists():
-            return profile.objects.none()
+            return current_profile
         
         current_members = Membership.objects.filter(ymht=current_profile)
         current_centers = []
