@@ -192,7 +192,7 @@ class profileAdmin(admin.ModelAdmin):
         if not Membership.objects.filter(ymht=current_profile, is_active=True).exists():
             return current_profile
         
-        current_members = Membership.objects.filter(ymht=current_profile)
+        current_members = Membership.objects.filter(ymht=current_profile, is_active=True)
         current_centers = []
         current_age_groups = []
         current_roles = []
@@ -205,15 +205,9 @@ class profileAdmin(admin.ModelAdmin):
 # For clarification on how to operate on list of Querysets, please visit:
 # http://simeonfranklin.com/blog/2011/jun/14/best-way-or-list-django-orm-q-objects/
         for i,item in enumerate(current_roles):
-            if current_roles[i]>2:
+            if current_roles[i]>1:
                 memberships.append(Membership.objects.filter(center=current_centers[i],
                     age_group=current_age_groups[i], role__level__lte=current_roles[i]))
-            else:
-                memberships.append(Membership.objects.filter(center=current_centers[i],
-                    age_group=current_age_groups[i], role__level__lt=current_roles[i]))
-
-        #Filtered the queryset twice based on age_group & center
-        # filtered_qs = qs.filter(membership__in=memberships)
         qs = qs.filter(membership__in=reduce(OR, memberships))
         return qs.distinct()
     def get_formsets(self, request, obj=None):
