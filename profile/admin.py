@@ -123,8 +123,6 @@ class YMHTMembershipInline(admin.StackedInline):
                 current_age_groups.append(member.age_group)
         level_filtered_qs = qs.filter(role__level__lt=max(current_roles))
         return level_filtered_qs.filter(center__in=current_centers, age_group__in=current_age_groups)
-# For clarification on how to operate on list of Querysets, please visit:
-# http://simeonfranklin.com/blog/2011/jun/14/best-way-or-list-django-orm-q-objects/
 
         
 #     def formfield_for_foreignkey(self, db_field, request, **kwargs):
