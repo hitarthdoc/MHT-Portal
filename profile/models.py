@@ -162,6 +162,7 @@ class GlobalEventSewaDetails(models.Model):
 	ATTENDED_DETAILS = ((1, 'All Days'), (2, 'Partial Days'))
 	ymht = models.ForeignKey(profile)
 	event = models.ForeignKey(GlobalEvent)
+	department = models.CharField(max_length=50, blank=True)
 	attended = models.IntegerField(choices=ATTENDED_DETAILS)
 	attended_days = models.IntegerField(blank=True, null=True)
 	comments = models.CharField(max_length=100, blank=True, null=True)
@@ -175,7 +176,7 @@ class LocalEventSewaDetails(models.Model):
 	ymht = models.ForeignKey(profile)
 	event = models.ForeignKey(LocalEvent)
 	sewa_dept = models.CharField(max_length=255)
-	sewa_name = models.CharField(max_length=255)
+# 	sewa_name = models.CharField(max_length=255, null=True)
 	comments = models.CharField(max_length=100, blank=True, null=True)
 
 	def __unicode__(self):
@@ -186,7 +187,7 @@ class LocalEventSewaDetails(models.Model):
 class GNCSewaDetails(models.Model):
 	ymht = models.ForeignKey(profile)
 	name = models.ForeignKey(GNCSewa, null=True)
-	project_responsible = models.CharField(max_length=255,
+	coordinator_name = models.CharField(max_length=255, null=True,
 		help_text="Person who is responsible for the project")
 	comments = models.CharField(max_length=100, blank=True, null=True)
 
