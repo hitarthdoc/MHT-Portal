@@ -44,10 +44,9 @@ class YMHTMembershipInline(admin.StackedInline):
     # fields = ('ymht' , 'center' , 'age_group' , 'role', 'since', 'till', 'is_active')
     model = Membership
     formset = RequiredFormSet
-    def get_readonly_fields(self, request, obj=None):
-        if request.user.is_superuser:
-            return []
-        
+#     def get_readonly_fields(self, request, obj=None):
+#         if request.user.is_superuser:
+#             return []
 # # TODO: If the profile being viewed is one's own, then the membership field should be shown as read only        
 #         return ('sub_role') #self.readonly_fields + self.fields
 
@@ -125,6 +124,7 @@ class YMHTMembershipInline(admin.StackedInline):
         level_filtered_qs = qs.filter(role__level__lt=max(current_roles))
         return level_filtered_qs.filter(center__in=current_centers, age_group__in=current_age_groups)
 
+        
 #     def formfield_for_foreignkey(self, db_field, request, **kwargs):
 #         if request.user.is_superuser:
 #             return super(YMHTMembershipInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
