@@ -43,6 +43,10 @@
 
 *.rar
 
+# Eclipse pref files #
+######################
+*.prefs
+
 # OS generated files #
 ######################
 .DS_Store
