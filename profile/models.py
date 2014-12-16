@@ -187,7 +187,7 @@ class LocalEventSewaDetails(models.Model):
 class GNCSewaDetails(models.Model):
 	ymht = models.ForeignKey(profile)
 	name = models.ForeignKey(GNCSewa, null=True)
-	project_responsible = models.CharField(max_length=255, verbose_name='Coordinator name:',
+	project_responsible = models.CharField(max_length=255, verbose_name='Coordinator name',
 # 	coordinator_name = models.CharField(max_length=255, null=True,
         help_text="Person who is responsible for the project")
 	comments = models.CharField(max_length=100, blank=True, null=True)
