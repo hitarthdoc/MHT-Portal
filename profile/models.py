@@ -176,7 +176,7 @@ class LocalEventSewaDetails(models.Model):
 	ymht = models.ForeignKey(profile)
 	event = models.ForeignKey(LocalEvent)
 	sewa_dept = models.CharField(max_length=255)
-# 	sewa_name = models.CharField(max_length=255, null = True)
+	sewa_name = models.CharField(max_length=255, null = True, editable=False)
 	comments = models.CharField(max_length=100, blank=True, null=True)
 
 	def __unicode__(self):
@@ -187,9 +187,9 @@ class LocalEventSewaDetails(models.Model):
 class GNCSewaDetails(models.Model):
 	ymht = models.ForeignKey(profile)
 	name = models.ForeignKey(GNCSewa, null=True)
-# 	project_responsible = models.CharField(max_length=255,
-	coordinator_name = models.CharField(max_length=255, null=True,
-           help_text="Person who is responsible for the project")
+	project_responsible = models.CharField(max_length=255, verbose_name='Coordinator name:',
+# 	coordinator_name = models.CharField(max_length=255, null=True,
+        help_text="Person who is responsible for the project")
 	comments = models.CharField(max_length=100, blank=True, null=True)
 
 	def __unicode__(self):

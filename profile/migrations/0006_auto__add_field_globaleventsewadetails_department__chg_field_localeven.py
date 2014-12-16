@@ -8,35 +8,22 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Deleting field 'LocalEventSewaDetails.sewa_name'
-        db.delete_column(u'profile_localeventsewadetails', 'sewa_name')
-
-        # Deleting field 'GNCSewaDetails.project_responsible'
-        db.delete_column(u'profile_gncsewadetails', 'project_responsible')
-
-        # Adding field 'GNCSewaDetails.coordinator_name'
-        db.add_column(u'profile_gncsewadetails', 'coordinator_name',
-                      self.gf('django.db.models.fields.CharField')(max_length=255, null=True),
+        # Adding field 'GlobalEventSewaDetails.department'
+        db.add_column(u'profile_globaleventsewadetails', 'department',
+                      self.gf('django.db.models.fields.CharField')(max_length=50, null=True),
                       keep_default=False)
 
+
+        # Changing field 'LocalEventSewaDetails.sewa_name'
+        db.alter_column(u'profile_localeventsewadetails', 'sewa_name', self.gf('django.db.models.fields.CharField')(max_length=255, null=True))
 
     def backwards(self, orm):
         # Deleting field 'GlobalEventSewaDetails.department'
         db.delete_column(u'profile_globaleventsewadetails', 'department')
 
-        # Adding field 'GNCSewaDetails.project_responsible'
-        db.add_column(u'profile_gncsewadetails', 'project_responsible',
-                      self.gf('django.db.models.fields.CharField')(default='None', max_length=255),
-                      keep_default=False)
 
-        # Deleting field 'GNCSewaDetails.coordinator_name'
-        db.delete_column(u'profile_gncsewadetails', 'coordinator_name')
-
-        # Adding field 'LocalEventSewaDetails.sewa_name'
-        db.add_column(u'profile_localeventsewadetails', 'sewa_name',
-                      self.gf('django.db.models.fields.CharField')(default='None', max_length=255),
-                      keep_default=False)
-
+        # Changing field 'LocalEventSewaDetails.sewa_name'
+        db.alter_column(u'profile_localeventsewadetails', 'sewa_name', self.gf('django.db.models.fields.CharField')(default='None', max_length=255))
 
     models = {
         u'auth.group': {
@@ -160,9 +147,9 @@ class Migration(SchemaMigration):
         u'profile.gncsewadetails': {
             'Meta': {'object_name': 'GNCSewaDetails'},
             'comments': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'coordinator_name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['masters.GNCSewa']", 'null': 'True'}),
+            'project_responsible': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'ymht': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['profile.profile']"})
         },
         u'profile.localeventsewadetails': {
@@ -171,6 +158,7 @@ class Migration(SchemaMigration):
             'event': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['masters.LocalEvent']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'sewa_dept': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'sewa_name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True'}),
             'ymht': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['profile.profile']"})
         },
         u'profile.membership': {
