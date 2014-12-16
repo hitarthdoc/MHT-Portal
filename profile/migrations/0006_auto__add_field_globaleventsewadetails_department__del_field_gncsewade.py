@@ -8,10 +8,8 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding field 'GlobalEventSewaDetails.department'
-        db.add_column(u'profile_globaleventsewadetails', 'department',
-                      self.gf('django.db.models.fields.CharField')(max_length=50, null=True),
-                      keep_default=False)
+        # Deleting field 'LocalEventSewaDetails.sewa_name'
+        db.delete_column(u'profile_localeventsewadetails', 'sewa_name')
 
         # Deleting field 'GNCSewaDetails.project_responsible'
         db.delete_column(u'profile_gncsewadetails', 'project_responsible')
@@ -20,9 +18,6 @@ class Migration(SchemaMigration):
         db.add_column(u'profile_gncsewadetails', 'coordinator_name',
                       self.gf('django.db.models.fields.CharField')(max_length=255, null=True),
                       keep_default=False)
-
-        # Deleting field 'LocalEventSewaDetails.sewa_name'
-        db.delete_column(u'profile_localeventsewadetails', 'sewa_name')
 
 
     def backwards(self, orm):
