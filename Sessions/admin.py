@@ -5,6 +5,7 @@ from django.forms import TextInput, Textarea
 from django.forms import CheckboxSelectMultiple, SelectMultiple
 from .models import *
 from profile.models import Membership, profile, Center, Role
+from actions import export_as_csv, export
 
 def get_current_user_details(user):
 	current_profile = profile.objects.get(user=user)
@@ -56,6 +57,7 @@ class AttendanceInline(admin.TabularInline):
 	extra = 1
 	max_num = 1
 	can_delete = False
+	actions = [export_as_csv]
 	def get_readonly_fields(self, request, obj=None):
 		if obj:
 			if (obj.approved is True) and (request.user != obj.created_by):
@@ -94,6 +96,7 @@ class CoordAttendanceInline(admin.TabularInline):
 	max_num = 1
 	extra = 1
 	can_delete = False
+	actions = [export_as_csv]
 	def get_readonly_fields(self, request, obj=None):
 		if obj:
 			if (obj.approved is True) and (request.user != obj.created_by):
@@ -148,7 +151,7 @@ class ReportAdmin(admin.ModelAdmin):
 		AttendanceInline,
 		CoordAttendanceInline,
 	]
-	
+	actions = [export_as_csv, export]
 	list_display = ('session_name', 'created_by', 'approved')
 	# list_filter = ('session_name',)
 	# search_fields = ('session_name','created_by')
@@ -273,6 +276,7 @@ class ReportAdmin(admin.ModelAdmin):
 class NewSessionAdmin(admin.ModelAdmin):
 	list_display = ('name', 'start_date', 'location','approved')
 	search_fields = ('name','location')
+	actions = [export_as_csv]
 	def get_readonly_fields(self, request, obj=None):
 		if obj:
 			return ["created_by"]
