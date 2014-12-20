@@ -6,6 +6,54 @@ from django.forms import CheckboxSelectMultiple, SelectMultiple
 from .models import *
 from profile.models import Membership, profile, Center, Role
 from actions import export_as_csv, export
+from django.http import HttpResponse
+import csv
+from django.core.exceptions import PermissionDenied
+from django.template.defaultfilters import slugify
+
+def export_session_as_csv(modeladmin, request, queryset):
+	"""
+	Generic csv export admin action.
+	"""
+	if not request.user.is_staff:
+		raise PermissionDenied
+	opts = modeladmin.model._meta
+	response = HttpResponse(content_type='text/csv')
+	response['Content-Disposition'] = 'attachment; filename=%s.csv' % unicode(opts).replace('.', '_')
+	writer = csv.writer(response)
+	field_names = [field.name for field in opts.fields]
+	# Write a first row with header information
+	writer.writerow(field_names)
+	# Write data rows
+	for current_session in queryset:
+		writer.writerow([getattr(current_session, field) for field in field_names])
+		for current_session_attendance in Attendance.objects.filter(session=current_session):
+			row = ["", current_session_attendance.ymht.name, "Present"]
+			writer.writerow(row)
+	return response
+export_session_as_csv.short_description = "Export selected Sessions as CSV"
+
+def export_report_as_csv(modeladmin, request, queryset):
+	"""
+	Generic csv export admin action.
+	"""
+	if not request.user.is_staff:
+		raise PermissionDenied
+	opts = modeladmin.model._meta
+	response = HttpResponse(content_type='text/csv')
+	response['Content-Disposition'] = 'attachment; filename=%s.csv' % unicode(opts).replace('.', '_')
+	writer = csv.writer(response)
+	field_names = [field.name for field in opts.fields]
+	# Write a first row with header information
+	writer.writerow(field_names)
+	# Write data rows
+	for current_session in queryset:
+		writer.writerow([getattr(current_session, field) for field in field_names])
+		for current_session_attendance in Attendance.objects.filter(session=current_session):
+			row = ["", current_session_attendance.ymht.name, "Present"]
+			writer.writerow(row)
+	return response
+export_report_as_csv.short_description = "Export selected Report as CSV"
 
 def get_current_user_details(user):
 	current_profile = profile.objects.get(user=user)
@@ -151,7 +199,7 @@ class ReportAdmin(admin.ModelAdmin):
 		AttendanceInline,
 		CoordAttendanceInline,
 	]
-	actions = [export_as_csv, export]
+	actions = [export_report_as_csv, export]
 	list_display = ('session_name', 'created_by', 'approved')
 	# list_filter = ('session_name',)
 	# search_fields = ('session_name','created_by')
@@ -276,7 +324,7 @@ class ReportAdmin(admin.ModelAdmin):
 class NewSessionAdmin(admin.ModelAdmin):
 	list_display = ('name', 'start_date', 'location','approved')
 	search_fields = ('name','location')
-	actions = [export_as_csv]
+	actions = [export_session_as_csv]
 	def get_readonly_fields(self, request, obj=None):
 		if obj:
 			return ["created_by"]
