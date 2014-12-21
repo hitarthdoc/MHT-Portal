@@ -45,7 +45,39 @@ class YMHTMembershipInline(admin.StackedInline):
     model = Membership
     formset = RequiredFormSet
     def get_readonly_fields(self, request, obj=None):
-        return []
+        if obj:
+            if request.user.is_superuser:
+                return []
+            if not profile.objects.filter(user=request.user).exists():
+                return []
+            current_profile = profile.objects.get(user=request.user)
+            if not Membership.objects.filter(ymht=current_profile).exists():
+                return []
+            current_members = Membership.objects.filter(ymht=current_profile)
+            current_roles = []
+            for member in current_members:
+                if member.is_active:
+                    current_roles.append(member.role.level)
+            highest_level = max(current_roles)
+            current_obj_members = Membership.objects.filter(ymht=obj)
+            current_obj_roles = []
+            for member in current_obj_members:
+                if member.is_active:
+                    current_obj_roles.append(member.role.level)
+            highest_obj_level = max(current_obj_roles)
+            if (highest_obj_level >= highest_level):
+                return self.readonly_fields + ('center', 'age_group', 'role', 'sub_role',
+                    'since', 'till', 'is_active')
+            else:
+                return []
+            # if (obj.approved is True) and (request.user != obj.created_by):
+            #     return self.readonly_fields + ('session_name', 'improvement', 'category',
+            #         'attachment', 'created_by', 'approved')
+            # else:
+            #     return ['created_by']
+
+        else:
+            return []
             
 # # TODO: If the profile being viewed is one's own, then the membership field should be shown as read only        
 #         return ('sub_role') #self.readonly_fields + self.fields
@@ -92,22 +124,31 @@ class YMHTMembershipInline(admin.StackedInline):
 
 # TODO: Fetch subrole fields based on selection in role
 
-    def queryset(self, request):
-        qs = super(YMHTMembershipInline, self).queryset(request)
-        if request.user.is_superuser:
-            return qs
+    # def queryset(self, request):
+    #     qs = super(YMHTMembershipInline, self).queryset(request)
+    #     if request.user.is_superuser:
+    #         return qs
         
-        if not profile.objects.filter(user=request.user).exists():
-            return Membership.objects.none()
-        current_profile = profile.objects.get(user=request.user)
+    #     if not profile.objects.filter(user=request.user).exists():
+    #         return Membership.objects.none()
+    #     current_profile = profile.objects.get(user=request.user)
         
-        if not Membership.objects.filter(ymht=current_profile, is_active=True).exists():
-            return Membership.objects.none()
+    #     if not Membership.objects.filter(ymht=current_profile, is_active=True).exists():
+    #         return Membership.objects.none()
         
-        current_members = Membership.objects.filter(ymht=current_profile)
-        current_centers = []
-        current_age_groups = []
-        current_roles = []
+    #     current_members = Membership.objects.filter(ymht=current_profile)
+    #     current_centers = []
+    #     current_age_groups = []
+    #     current_roles = []
+
+    #     for member in current_members:
+    #         if member.is_active:
+    #             current_roles.append(member.role.level)
+    #             current_centers.append(member.center)
+    #             current_age_groups.append(member.age_group)
+    #     level_filtered_qs = qs.filter(role__level__lt=max(current_roles))
+    #     return level_filtered_qs.filter(center__in=current_centers, age_group__in=current_age_groups)
+
 # TODO: Known issue: In case of a MHT with multiple memberships, e.g. earlier
 # was in Borivali say from 2013 - 14, and then shifted to S. City. Then both the
 # coordinators should be able to view his info. But, on opening the profile, the
@@ -116,15 +157,7 @@ class YMHTMembershipInline(admin.StackedInline):
 # Borivali coordinator has been filtered to show only Borivali in the centre
 # options, and that would change the MHT's details, which we don't want.
         
-        for member in current_members:
-            if member.is_active:
-                current_roles.append(member.role.level)
-                current_centers.append(member.center)
-                current_age_groups.append(member.age_group)
-        level_filtered_qs = qs.filter(role__level__lt=max(current_roles))
-        return level_filtered_qs.filter(center__in=current_centers, age_group__in=current_age_groups)
-
-        
+                
 #     def formfield_for_foreignkey(self, db_field, request, **kwargs):
 #         if request.user.is_superuser:
 #             return super(YMHTMembershipInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
