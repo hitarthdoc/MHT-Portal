@@ -3,25 +3,25 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from django.template.defaultfilters import slugify
 
-def export(modeladmin, request, queryset):
-    opts = modeladmin.model._meta
-    response = HttpResponse(mimetype='text/csv')
-    response['Content-Disposition'] = 'attachment; filename=%s.csv' % unicode(opts).replace('.', '_')
-    writer = csv.writer(response)
-    # Write headers to CSV file
-    headers = []
-    for field in modeladmin._meta.fields:
-        headers.append(field.name)
-    writer.writerow(headers)
-    # Write data to CSV file
-    print modeladmin.objects.all()
-    for obj in modeladmin.objects.all().order_by("id"):
-        row = []
-        for field in modeladmin._meta.fields:
-            row.append(getattr(obj, field.name))
-        writer.writerow(row)
-    # Return CSV file to browser as download
-    return response
+# def export(modeladmin, request, queryset):
+#     opts = modeladmin.model._meta
+#     response = HttpResponse(mimetype='text/csv')
+#     response['Content-Disposition'] = 'attachment; filename=%s.csv' % unicode(opts).replace('.', '_')
+#     writer = csv.writer(response)
+#     # Write headers to CSV file
+#     headers = []
+#     for field in modeladmin._meta.fields:
+#         headers.append(field.name)
+#     writer.writerow(headers)
+#     # Write data to CSV file
+#     print modeladmin.objects.all()
+#     for obj in modeladmin.objects.all().order_by("id"):
+#         row = []
+#         for field in modeladmin._meta.fields:
+#             row.append(getattr(obj, field.name))
+#         writer.writerow(row)
+#     # Return CSV file to browser as download
+#     return response
 
 def export_as_csv(modeladmin, request, queryset):
     """
