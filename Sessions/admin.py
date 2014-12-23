@@ -276,7 +276,7 @@ class ReportAdmin(admin.ModelAdmin):
 class NewSessionAdmin(admin.ModelAdmin):
 	list_display = ('name', 'start_date', 'location','approved')
 	search_fields = ('name','location')
-	actions = [export_as_csv]
+	actions = [export_as_csv, export]
 	def get_readonly_fields(self, request, obj=None):
 		if obj:
 			return ["created_by"]

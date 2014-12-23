@@ -14,7 +14,6 @@ from Sessions.models import *
 from django_countries.fields import CountryField
 from django import forms
 
-
 class YMHTMobileInline(admin.StackedInline):
     model = YMHTMobile
     extra = 1
@@ -38,12 +37,17 @@ class YMHTJobInline(admin.StackedInline):
 class RequiredFormSet(forms.models.BaseInlineFormSet):
     def __init__(self, *args, **kwargs):
         super(RequiredFormSet, self).__init__(*args, **kwargs)
-        self.forms[0].empty_permitted = False
+        for form in self.forms:
+            form.empty_permitted = False
 
 class YMHTMembershipInline(admin.StackedInline):
     # fields = ('ymht' , 'center' , 'age_group' , 'role', 'since', 'till', 'is_active')
     model = Membership
     formset = RequiredFormSet
+    extra = 0
+#     def __init__(self, *args, **kwargs):
+#         super(YMHTMembershipInline, self).__init__(*args, **kwargs)
+        
     def get_readonly_fields(self, request, obj=None):
         if obj:
             if request.user.is_superuser:
@@ -75,7 +79,7 @@ class YMHTMembershipInline(admin.StackedInline):
             #         'attachment', 'created_by', 'approved')
             # else:
             #     return ['created_by']
-
+ 
         else:
             return []
             
@@ -114,7 +118,6 @@ class YMHTMembershipInline(admin.StackedInline):
         # if db_field.name == 'role':
         #     kwargs['queryset'] = Role.objects.exclude(role='Coordinator')
         return super(YMHTMembershipInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
-    extra = 1
 
     def get_formset(self, request, obj=None, **kwargs):
         self.exclude = []
