@@ -214,6 +214,12 @@ class profileAdmin(admin.ModelAdmin):
     ]
 #     TODO: Right now, in User, all the usernames list comes. But in future we should filter this down.
 #     How to do this is a good question. Ideas would be appreciated
+    def get_formset(self, request, obj=None, **kwargs):
+        self.exclude = []
+        if not request.user.is_superuser:
+            self.exclude.append('user')
+        return super(profileAdmin, self).get_formset(request, obj, **kwargs)
+
     def queryset(self, request):
         qs = super(profileAdmin, self).queryset(request)
         if request.user.is_superuser:

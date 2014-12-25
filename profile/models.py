@@ -52,9 +52,9 @@ class profile(models.Model):
   help_text="Only add hobbies here that are not listed in the Hobbies field above.")
 	# event = models.ForeignKey(Event)
 	gnan_date = models.DateField(blank=True, null=True, help_text="Date Format: DD-MM-YYYY")
-	father_name = models.CharField(max_length=255)
+	father_name = models.CharField(max_length=255, verbose_name="Father's name")
 	father_contact = models.CharField(max_length=10, blank=True, null=True, verbose_name="Father's contact", validators=[RegexValidator(r'^[0-9]*$', 'Only numbers are allowed here.')])
-	mother_name = models.CharField(max_length=255)
+	mother_name = models.CharField(max_length=255, verbose_name="Mother's name")
 	mother_contact = models.CharField(max_length=10, blank=True, null=True, verbose_name="Mother's contact", validators=[RegexValidator(r'^[0-9]*$', 'Only numbers are allowed here.')])
 	profile_picture = models.ImageField(upload_to=profile_picture_file_name, blank=True, null=True)
 
