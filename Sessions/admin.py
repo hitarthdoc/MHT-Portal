@@ -160,6 +160,8 @@ class ReportAdmin(admin.ModelAdmin):
 	# also be read only
 	formfield_overrides = { models.ManyToManyField: {'widget': SelectMultiple(attrs={'size':'10'})}, }
 	def get_readonly_fields(self, request, obj=None):
+		if request.user.is_superuser:
+			return []
 		if obj:
 			if (obj.approved is True) and (request.user != obj.created_by):
 				return self.readonly_fields + ('session_name', 'improvement', 'category',
