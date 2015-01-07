@@ -126,7 +126,8 @@ ROOT_URLCONF = 'MHT_Portal.urls'
 WSGI_APPLICATION = 'MHT_Portal.wsgi.application'
 
 TEMPLATE_DIRS = (
-    'E:/MHT Portal/mpn/templates/admin'
+    'E:/MHT Portal/mpn/templates/admin',
+    '/Users/sidharth/Projects/MHT-Portal/templates',
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
@@ -150,6 +151,7 @@ INSTALLED_APPS = (
     'Sessions',
     'masters',
     'south',
+    'reports'
 )
 
 # A sample logging configuration. The only tangible logging

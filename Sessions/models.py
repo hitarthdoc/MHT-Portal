@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from profile.models import Center
-from profile.models import profile
+from profile.models import profile, Membership
 from masters.models import SessionType
 from masters.models import AgeGroup
 from masters.models import Activities
@@ -62,6 +62,15 @@ class NewSession(models.Model):
 	class Meta:
 		verbose_name_plural = 'Sessions'
 
+	def get_attendance(self):
+		print self.center_name
+		total = Membership.objects.filter(center__in=self.center_name.all(), is_active=True).count()
+		present = Attendance.objects.get(session=self).ymht.count()
+
+		if total == 0 or present == 0:
+			return 0
+
+		return int(round(present/float(total))) * 100
 class Report(models.Model):
 	
 	def get_default_created_by():

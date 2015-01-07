@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block contents %}
+        <h1>Attendance Report</h1>
+		<form action="/attendance" method="GET">			
+			Center: <select name="center" id="center">
+				{% for center in centers %}
+					<option value="{{center.id}}">{{center}}</option>
+				{% endfor %}
+			</select>&nbsp;&nbsp;&nbsp;
+			Start Date:&nbsp;<input type="text" name="start">&nbsp;&nbsp;&nbsp;
+			End Date:&nbsp;<input type="text" name="end">&nbsp;&nbsp;&nbsp;
+			<input type="submit" value="Generate!">
+		</form>
+
+		{% if sessions %}
+			{% for session in sessions %}
+				{{session}} --> {{session.get_attendance}}
+			{% endfor %}
+		{% endif %}
+
+{% endblock %}
