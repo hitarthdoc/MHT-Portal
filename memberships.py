@@ -23,13 +23,18 @@ center_name_list = ["Dombivali", "Borivali", "Ghatkopar", "Ville Parle"]
 Mumbai = City.objects.get(name="Mumbai")
 Mumbai_centres = Center.objects.filter(city=Mumbai)
 Mumbai_members = Membership.objects.filter(center__in=Mumbai_centres)
+print len(Mumbai_members)
 for member in Mumbai_members:
     prof = member.ymht # Profile
     current_center = member.center
     centre_name = current_center.center_name
     to_add_centers = centres_to_add(centre_name)
     for center in to_add_centers:
-        member = Membership()
-        member.ymht = prof
-        member.center = Center.objects.get(center_name=center)
-# profile.objects.filter()
+        new_member = Membership()
+        new_member.ymht = prof
+        new_member.center = Center.objects.get(center_name=center)
+        new_member.age_group = member.age_group
+        new_member.role = member.role
+        new_member.since = member.since
+        new_member.is_active = True
+        new_member.save()
