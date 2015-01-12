@@ -7,8 +7,9 @@ if __name__ == "__main__":
 
 from django.contrib.auth.models import User
 from profile.models import profile, Membership
-from masters.models import Hobby, Center, AgeGroup, Role, SubRole
+
 import datetime
+from masters.models import Hobby, Center, AgeGroup, Role, SubRole
 
 csvfile = open('profiles_left.csv', 'rb')
 reader = csv.reader(csvfile,)
