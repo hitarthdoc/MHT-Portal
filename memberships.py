@@ -18,7 +18,6 @@ def centres_to_add(centre_name):
     if centre_name == "Ville Parle":
         return ["Dombivali", "Borivali", "Ghatkopar"]
     
-    return
 center_name_list = ["Dombivali", "Borivali", "Ghatkopar", "Ville Parle"]
 Mumbai = City.objects.get(name="Mumbai")
 Mumbai_centres = Center.objects.filter(city=Mumbai)

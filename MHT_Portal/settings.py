@@ -127,6 +127,7 @@ WSGI_APPLICATION = 'MHT_Portal.wsgi.application'
 
 TEMPLATE_DIRS = (
     'E:/MHT Portal/mpn/templates/admin',
+    '/Users/sidharth/Projects/MHT-Portal/templates',
     'C:/Users/admin/Documents/GitHub/MHT-Portal/templates/admin',
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
