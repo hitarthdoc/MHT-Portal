@@ -44,15 +44,7 @@ class YMHTMembershipInline(admin.StackedInline):
     # fields = ('ymht' , 'center' , 'age_group' , 'role', 'since', 'till', 'is_active')
     model = Membership
     formset = RequiredFormSet
-#     @property
-#     def extra(self):
-#         return self._extra
-#     @extra.setter
-#     def extra(self, value):
-#         self._extra = value
     extra = 1
-#     def __init__(self, *args, **kwargs):
-#         super(YMHTMembershipInline, self).__init__(*args, **kwargs)
         
     def get_readonly_fields(self, request, obj=None):
         if obj:
