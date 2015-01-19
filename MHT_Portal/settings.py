@@ -128,7 +128,7 @@ WSGI_APPLICATION = 'MHT_Portal.wsgi.application'
 TEMPLATE_DIRS = (
     'E:/MHT Portal/mpn/templates/admin',
     '/Users/sidharth/Projects/MHT-Portal/templates',
-    'C:/Users/admin/Documents/GitHub/MHT-Portal/templates/admin',
+    # 'C:/Users/admin/Documents/GitHub/MHT-Portal/templates',
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
@@ -206,3 +206,8 @@ BROKER_TRANSPORT_OPTIONS = {'fanout_patterns': True}
 BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 43200}
 BROKER_URL = 'sqla+sqlite:///celerydb.sqlite'
 BROKER_URL = 'django://'
+
+try:
+    from settings_local import *
+except ImportError:
+    pass
