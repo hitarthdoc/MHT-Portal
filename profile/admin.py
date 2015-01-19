@@ -44,7 +44,13 @@ class YMHTMembershipInline(admin.StackedInline):
     # fields = ('ymht' , 'center' , 'age_group' , 'role', 'since', 'till', 'is_active')
     model = Membership
     formset = RequiredFormSet
-    extra = 0
+#     @property
+#     def extra(self):
+#         return self._extra
+#     @extra.setter
+#     def extra(self, value):
+#         self._extra = value
+    extra = 1
 #     def __init__(self, *args, **kwargs):
 #         super(YMHTMembershipInline, self).__init__(*args, **kwargs)
         
@@ -70,6 +76,9 @@ class YMHTMembershipInline(admin.StackedInline):
                     current_obj_roles.append(member.role.level)
             highest_obj_level = max(current_obj_roles)
             if (highest_obj_level >= highest_level):
+                self.extra = 0
+                self.max_num = 0
+                self.can_delete = False
                 return self.readonly_fields + ('center', 'age_group', 'role', 'sub_role',
                     'since', 'till', 'is_active')
             else:
@@ -82,9 +91,6 @@ class YMHTMembershipInline(admin.StackedInline):
  
         else:
             return []
-            
-# # TODO: If the profile being viewed is one's own, then the membership field should be shown as read only        
-#         return ('sub_role') #self.readonly_fields + self.fields
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if request.user.is_superuser:
@@ -214,11 +220,11 @@ class profileAdmin(admin.ModelAdmin):
     ]
 #     TODO: Right now, in User, all the usernames list comes. But in future we should filter this down.
 #     How to do this is a good question. Ideas would be appreciated
-    def get_formset(self, request, obj=None, **kwargs):
+    def get_form(self, request, obj=None, **kwargs):
         self.exclude = []
         if not request.user.is_superuser:
             self.exclude.append('user')
-        return super(profileAdmin, self).get_formset(request, obj, **kwargs)
+        return super(profileAdmin, self).get_form(request, obj, **kwargs)
 
     def queryset(self, request):
         qs = super(profileAdmin, self).queryset(request)
