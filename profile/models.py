@@ -19,6 +19,7 @@ from masters.models import GlobalEvent
 from masters.models import LocalEvent
 from masters.models import GNCSewa
 
+
 def profile_picture_file_name(instance, filename):
   try:
 	return '/'.join(['profile', instance.user.username, filename])
@@ -118,7 +119,11 @@ class YMHTEducation(models.Model):
 	institution_name = models.CharField(max_length=255, verbose_name="School/College Name:")
 	stream_or_Degree = models.CharField(max_length=255, null=True, verbose_name="Stream/Degree",
 		help_text="E.g. Science, Commerce, Arts, B.E., Diploma. Use None in case of no stream.")
-	class_or_year = models.CharField(max_length=255, null=True, verbose_name="Standard/Year")
+	class_or_year = models.CharField(max_length=255, null=True,
+		verbose_name = "Standard/Year OR Year of Graduation",
+		help_text =	"If still studying, enter Standard in case of school e.g. 'X' or 'Class 8' \
+					etc. or Year of study in case of college e.g. '1st year'.\
+					If graduated, then please enter Year of Graduation.")
 	other_Details = models.TextField(blank=True, null=True, help_text="Any other remarks")
 	current = models.BooleanField(default=False)
 	def __unicode__(self):
@@ -151,7 +156,7 @@ class Membership(models.Model):
 	sub_role = models.ManyToManyField(SubRole, blank=True)
 	since = models.DateField()
 	till = models.DateField(blank=True, null=True)
-	is_active = models.BooleanField(default=False)
+	is_active = models.BooleanField(default=True)
 
 	def __unicode__(self):
 		return '%s, %s at %s center for age group %s' % (self.ymht, self.role, self.center,
