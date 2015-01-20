@@ -104,7 +104,7 @@ class Center(models.Model):
 
     CATEGORY_CHOICES = ((1, 'BMHT'),
                         (2, 'LMHT'),
-                        (3, 'YMHT')),
+                        (3, 'YMHT'))
     category = models.IntegerField(choices=CATEGORY_CHOICES)
     established_since = models.DateField()
     center_name = models.CharField(max_length=255, null=True)
