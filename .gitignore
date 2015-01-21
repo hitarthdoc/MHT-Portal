@@ -33,6 +33,10 @@
 *.sql
 *.sqlite3
 
+# Djangolocalsettings#
+######################
+settings_local.py
+
 # Images #
 ######################
 *.jpeg
