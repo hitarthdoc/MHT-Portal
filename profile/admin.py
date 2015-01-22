@@ -50,6 +50,7 @@ class RequiredFormSet(forms.models.BaseInlineFormSet):
 
 class YMHTMembershipInline(admin.StackedInline):
     # fields = ('ymht' , 'center' , 'age_group' , 'role', 'since', 'till', 'is_active')
+    list_display = ('center')
     model = Membership
     formset = RequiredFormSet
     extra = 1
@@ -175,7 +176,8 @@ class GNCSewaDetailsInline(admin.StackedInline):
 
 
 class profileAdmin(admin.ModelAdmin):
-    list_display = ('first_name', 'last_name', 'date_of_birth', 'gnan_date')
+
+    list_display = ('first_name', 'last_name', 'date_of_birth', 'gnan_date', 'center_name')
     list_filter = ('first_name', 'hobby')
     search_fields = ('first_name', 'last_name',)
     inlines = [
@@ -191,6 +193,27 @@ class profileAdmin(admin.ModelAdmin):
     ]
 #     TODO: Right now, in User, all the usernames list comes. But in future we should filter this down.
 #     How to do this is a good question. Ideas would be appreciated
+
+    def center_name(self, request):
+        current_profile = profile.objects.get(user=request.user)
+        if not Membership.objects.filter(ymht=current_profile, is_active=True).exists():
+            return current_profile
+
+        current_members = Membership.objects.filter(ymht=current_profile, is_active=True)
+        #current_centers = []
+        #current_age_groups = []
+        #current_roles = []
+        count = 0
+        for member in current_members:
+            if member.is_active:
+                if count > 0:
+                    count += 1
+                    current_centers += "(%s) %s  "%(count,str(member.center))
+                else:
+                    #current_roles.append(member.role.level)
+                    count += 1
+                    current_centers = "%s %s " %("(1)  ",str(member.center))
+        return current_centers
 
     def get_form(self, request, obj=None, **kwargs):
         self.exclude = []
