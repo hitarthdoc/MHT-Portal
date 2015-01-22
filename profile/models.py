@@ -19,6 +19,12 @@ from masters.models import GlobalEvent
 from masters.models import LocalEvent
 from masters.models import GNCSewa
 
+only_digits_validator = [RegexValidator(
+    r'^[0-9]*$', 'Only numbers are allowed here.')]
+
+only_letters_validator = [RegexValidator(
+    r'^[a-zA-Z]*$', 'Numbers are not allowed here.')]
+
 
 def profile_picture_file_name(instance, filename):
     try:
@@ -33,34 +39,34 @@ class profile(models.Model):
 
     GENDER_CHOICES = (('male', "Male"),
                       ('female', "Female"))
-    user = models.OneToOneField(User, null=True, blank=True, help_text="""Please
-                                 select user only for Helpers and Coordinators.
-                                 In case of Participants, please leave this
-                                 field blank.""")
-    first_name = models.CharField(max_length=255,
-                                  validators=[RegexValidator(r'^[a-zA-Z]*$',
-                                            'Numbers are not allowed here.')])
+    user = models.OneToOneField(
+        User, null=True, blank=True, help_text="""Please select user only for
+        Helpers and Coordinators. In case of Participants, please leave this
+        field blank.""")
+    first_name = models.CharField(
+        max_length=255, validators=only_letters_validator)
     last_name = models.CharField(max_length=255)
     gender = models.CharField(max_length=25, blank=False, null=False,
                               choices=GENDER_CHOICES, default='male')
     date_of_birth = models.DateField(help_text="Date Format: DD-MM-YYYY")
     hobby = models.ManyToManyField(Hobby, verbose_name='Hobbies')
-    other_hobbies = models.CharField(max_length=50, blank=True, help_text="""
-                                     Only add hobbies here that are not listed
-                                     in the Hobbies field above.""")
-    gnan_date = models.DateField(blank=True, null=True, help_text="Date Format: DD-MM-YYYY")
-    father_name = models.CharField(max_length=255, verbose_name="Father's name")
-    father_contact = models.CharField(max_length=10, blank=True, null=True,
-                                      verbose_name="Father's contact",
-                                      validators=[RegexValidator(r'^[0-9]*$',
-                                      'Only numbers are allowed here.')])
-    mother_name = models.CharField(max_length=255, verbose_name="Mother's name")
-    mother_contact = models.CharField(max_length=10, blank=True, null=True,
-                                      verbose_name="Mother's contact",
-                                      validators=[RegexValidator(r'^[0-9]*$',
-                                      'Only numbers are allowed here.')])
-    profile_picture = models.ImageField(upload_to=profile_picture_file_name,
-                                        blank=True, null=True)
+    other_hobbies = models.CharField(
+        max_length=50, blank=True, help_text="""Only add hobbies here that are
+        not listed in the Hobbies field above.""")
+    gnan_date = models.DateField(
+        blank=True, null=True, help_text="Date Format: DD-MM-YYYY")
+    father_name = models.CharField(
+        max_length=255, verbose_name="Father's name")
+    father_contact = models.CharField(
+        max_length=10, blank=True, null=True, verbose_name="Father's contact",
+        validators=only_digits_validator)
+    mother_name = models.CharField(
+        max_length=255, verbose_name="Mother's name")
+    mother_contact = models.CharField(
+        max_length=10, blank=True, null=True,
+        verbose_name="Mother's contact", validators=only_digits_validator)
+    profile_picture = models.ImageField(
+        upload_to=profile_picture_file_name, blank=True, null=True)
 
     # def prof_image(self):
     #   return '<img src="%s">' % (self.profile_picture)
@@ -72,9 +78,7 @@ class profile(models.Model):
 
 class YMHTMobile(models.Model):
     profile = models.ForeignKey(profile)
-    mobile = models.CharField(max_length=10,
-                              validators=[RegexValidator(r'^[0-9]*$',
-                              'Only numbers are allowed here.')])
+    mobile = models.CharField(max_length=10, validators=only_digits_validator)
     is_active = models.BooleanField(default=False)
 
     def __unicode__(self):
@@ -103,8 +107,7 @@ class YMHTAddress(models.Model):
     address_3 = models.CharField(max_length=255, blank=True, null=True)
     landmark = models.CharField(max_length=255, blank=True, null=True)
     city = models.ForeignKey(City)
-    zipcode = models.CharField(max_length=6, validators=[RegexValidator(r'^[0-9]*$',
-        'Only 6 digits are allowed here.')])
+    zipcode = models.CharField(max_length=6, validators=only_digits_validator)
     current_address = models.BooleanField(default=False)
 
     def __unicode__(self):
@@ -119,20 +122,26 @@ class YMHTEducation(models.Model):
                    ('college', "College"))
     ymht = models.ForeignKey(profile)
     school_or_College = models.CharField(choices=Edu_choices, max_length=256)
-    institution_name = models.CharField(max_length=255, verbose_name="School/College Name:")
-    stream_or_Degree = models.CharField(max_length=255, null=True, verbose_name="Stream/Degree",
-        help_text="E.g. Science, Commerce, Arts, B.E., Diploma. Use None in case of no stream.")
-    class_or_year = models.CharField(max_length=255, null=True,
+    institution_name = models.CharField(
+        max_length=255, verbose_name="School/College Name:")
+    stream_or_Degree = models.CharField(
+        max_length=255, null=True, verbose_name="Stream/Degree",
+        help_text="""E.g. Science, Commerce, Arts, B.E., Diploma. Use None in
+                   case of no stream.""")
+    class_or_year = models.CharField(
+        max_length=255, null=True,
         verbose_name="Standard/Year OR Year of Graduation",
-        help_text="If still studying, enter Standard in case of school e.g. 'X' or 'Class 8' \
-                    etc. or Year of study in case of college e.g. '1st year'.\
-                    If graduated, then please enter Year of Graduation.")
-    other_Details = models.TextField(blank=True, null=True, help_text="Any other remarks")
+        help_text="""If still studying, enter Standard in case of school e.g.
+                    'X' or 'Class 8' etc. or Year of study in case of college
+                    e.g. '1st year'. If graduated, then please enter Year of
+                    Graduation.""")
+    other_Details = models.TextField(
+        blank=True, null=True, help_text="Any other remarks")
     current = models.BooleanField(default=False)
 
     def __unicode__(self):
-        return 'Year/Class:%s, %s, %s' % (self.class_or_year, self.stream_or_Degree,
-            self.institution_name)
+        return 'Year/Class:%s, %s, %s' % (
+            self.class_or_year, self.stream_or_Degree, self.institution_name)
 
     class Meta:
         verbose_name_plural = 'Education Details'
@@ -147,7 +156,8 @@ class YMHTJob(models.Model):
     current = models.BooleanField()
 
     def __unicode__(self):
-        return '%s, %s at %s' % (self.job_type, self.designation, self.company_name)
+        return '%s, %s at %s' % (
+            self.job_type, self.designation, self.company_name)
 
     class Meta:
         verbose_name_plural = 'Job Details'
@@ -164,8 +174,8 @@ class Membership(models.Model):
     is_active = models.BooleanField(default=True)
 
     def __unicode__(self):
-        return '%s, %s at %s center for age group %s' % (self.ymht, self.role, self.center,
-            self.age_group)
+        return '%s, %s at %s center for age group %s' % (
+            self.ymht, self.role, self.center, self.age_group)
 
 
 class GlobalEventSewaDetails(models.Model):
@@ -201,7 +211,8 @@ class LocalEventSewaDetails(models.Model):
 class GNCSewaDetails(models.Model):
     ymht = models.ForeignKey(profile)
     name = models.ForeignKey(GNCSewa, null=True)
-    project_responsible = models.CharField(max_length=255, verbose_name='Coordinator name',
+    project_responsible = models.CharField(
+        max_length=255, verbose_name='Coordinator name',
         help_text="Person who is responsible for the project")
     comments = models.CharField(max_length=100, blank=True, null=True)
 
@@ -209,4 +220,4 @@ class GNCSewaDetails(models.Model):
         return "%s" % (self.name)
 
     class Meta:
-        verbose_name_plural = 'GNC Sewa Details'
+        verbose_name_plural = 'G.N.C. Sewa Details'

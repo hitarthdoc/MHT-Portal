@@ -4,7 +4,7 @@
 {% block title %}{% render_with_template_if_exist "admin/admin_title.html" "MHT Portal" %} | {% trans 'Dada Bhagwan Foundation' %}{% endblock %}
 
 {% block branding %}
-<a class="brand" href="{% url 'admin:index' %}">{% render_with_template_if_exist "admin/admin_title.html" "MHT Portal" %}</a>
+<a class="brand" href="{% url 'admin:index' %}">{% render_with_template_if_exist "admin/admin_title.html" "MHT Portal Administration" %}</a>
 {% endblock %}
 
 {% block nav-global %}{% endblock %}
