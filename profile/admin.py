@@ -194,7 +194,7 @@ class profileAdmin(admin.ModelAdmin):
 #     How to do this is a good question. Ideas would be appreciated
 
     def center_name(self, request):
-        current_profile = profile.objects.get(user=request.user)
+        current_profile = request
         if not Membership.objects.filter(ymht=current_profile, is_active=True).exists():
             return " "
 
