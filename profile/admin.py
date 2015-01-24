@@ -45,7 +45,6 @@ class RequiredFormSet(forms.models.BaseInlineFormSet):
     def __init__(self, *args, **kwargs):
         super(RequiredFormSet, self).__init__(*args, **kwargs)
         for form in self.forms:
-            print form.instance.is_active
             form.empty_permitted = False
 
 
@@ -182,12 +181,12 @@ class profileAdmin(admin.ModelAdmin):
     list_filter = ('first_name', 'hobby')
     search_fields = ('first_name', 'last_name',)
     inlines = [
+        YMHTMembershipInline,
         YMHTMobileInline,
         YMHTEmailInline,
         YMHTAddressInline,
         YMHTEducationInline,
         YMHTJobInline,
-        YMHTMembershipInline,
         GlobalEventSewaDetailsInline,
         LocalEventSewaDetailsInline,
         GNCSewaDetailsInline,
