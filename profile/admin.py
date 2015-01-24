@@ -181,12 +181,12 @@ class profileAdmin(admin.ModelAdmin):
     list_filter = ('first_name', 'hobby')
     search_fields = ('first_name', 'last_name',)
     inlines = [
-        YMHTMembershipInline,
         YMHTMobileInline,
         YMHTEmailInline,
         YMHTAddressInline,
         YMHTEducationInline,
         YMHTJobInline,
+        YMHTMembershipInline,
         GlobalEventSewaDetailsInline,
         LocalEventSewaDetailsInline,
         GNCSewaDetailsInline,
