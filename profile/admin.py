@@ -176,8 +176,8 @@ class GNCSewaDetailsInline(admin.StackedInline):
 
 class profileAdmin(admin.ModelAdmin):
 
-    list_display = ('first_name', 'last_name', 'date_of_birth', 'gnan_date',
-                    'role','center_name')
+    list_display = ('first_name', 'last_name', 'date_of_birth', 'role',
+                    'center_name')
     list_filter = ('first_name', 'hobby')
     search_fields = ('first_name', 'last_name',)
     inlines = [
