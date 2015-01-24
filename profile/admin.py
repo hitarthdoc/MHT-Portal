@@ -44,8 +44,7 @@ class YMHTJobInline(admin.StackedInline):
 class RequiredFormSet(forms.models.BaseInlineFormSet):
     def __init__(self, *args, **kwargs):
         super(RequiredFormSet, self).__init__(*args, **kwargs)
-        for form in self.forms:
-            form.empty_permitted = False
+        self.forms[0].empty_permitted = False
 
 
 class YMHTMembershipInline(admin.StackedInline):
@@ -197,22 +196,20 @@ class profileAdmin(admin.ModelAdmin):
     def center_name(self, request):
         current_profile = profile.objects.get(user=request.user)
         if not Membership.objects.filter(ymht=current_profile, is_active=True).exists():
-            return current_profile
+            return " "
 
         current_members = Membership.objects.filter(ymht=current_profile, is_active=True)
-        #current_centers = []
-        #current_age_groups = []
-        #current_roles = []
         count = 0
         for member in current_members:
             if member.is_active:
+                center = member.center
                 if count > 0:
                     count += 1
-                    current_centers += "(%s) %s  "%(count,str(member.center))
+                    current_centers += "(%s) %s, %s "%(count, center.center_name, center.city.name)
                 else:
                     #current_roles.append(member.role.level)
                     count += 1
-                    current_centers = "%s %s " %("(1)  ",str(member.center))
+                    current_centers = "%s %s, %s " %("(1)", center.center_name, center.city.name)
         return current_centers
 
     def get_form(self, request, obj=None, **kwargs):
