@@ -176,7 +176,8 @@ class GNCSewaDetailsInline(admin.StackedInline):
 
 class profileAdmin(admin.ModelAdmin):
 
-    list_display = ('first_name', 'last_name', 'date_of_birth', 'gnan_date', 'center_name')
+    list_display = ('first_name', 'last_name', 'date_of_birth', 'gnan_date',
+                    'role','center_name')
     list_filter = ('first_name', 'hobby')
     search_fields = ('first_name', 'last_name',)
     inlines = [
@@ -192,9 +193,23 @@ class profileAdmin(admin.ModelAdmin):
     ]
 #     TODO: Right now, in User, all the usernames list comes. But in future we should filter this down.
 #     How to do this is a good question. Ideas would be appreciated
+    def role(self, obj):
+        current_profile = obj
+        if not Membership.objects.filter(ymht=current_profile, is_active=True).exists():
+            return " "
+        current_members = Membership.objects.filter(ymht=current_profile, is_active=True)
+        max_role_level = 0
+        for member in current_members:
+            if member.is_active:
+                role = member.role
+                if role.level > max_role_level:
+                    max_role_level = role.level
+        if max_role_level == 0:
+            return " "
+        return Role.objects.get(level=max_role_level)
 
-    def center_name(self, request):
-        current_profile = request
+    def center_name(self, obj):
+        current_profile = obj
         if not Membership.objects.filter(ymht=current_profile, is_active=True).exists():
             return " "
 
