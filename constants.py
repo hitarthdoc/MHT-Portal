@@ -8,6 +8,10 @@ EVENT_CATEGORY_CHOICES = ((0, 'GNC Day'),
                           (6, 'Janma Jayanti'),
                           (7, 'Picnic'))
 
+
+PARTICIPANT_ROLE_LEVEL = 1
+HELPER_ROLE_LEVEL = 2
+COORD_ROLE_LEVEL = 3
 # These Constants have not been imported into profile/models but have been kept
 # for documentation. To change these, go to the original file for 
 # Edu_choices = (('school', "School"),

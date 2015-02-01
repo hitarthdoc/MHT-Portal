@@ -13,7 +13,7 @@ from .models import (profile, YMHTMobile,
 from Sessions.models import *
 from django_countries.fields import CountryField
 from django import forms
-
+from constants import PARTICIPANT_ROLE_LEVEL
 
 class YMHTMobileInline(admin.StackedInline):
     model = YMHTMobile
@@ -31,7 +31,6 @@ class YMHTAddressInline(admin.StackedInline):
 
 
 class YMHTEducationInline(admin.StackedInline):
-
     model = YMHTEducation
     extra = 1
 
@@ -191,8 +190,10 @@ class profileAdmin(admin.ModelAdmin):
         LocalEventSewaDetailsInline,
         GNCSewaDetailsInline,
     ]
+
 #     TODO: Right now, in User, all the usernames list comes. But in future we should filter this down.
 #     How to do this is a good question. Ideas would be appreciated
+
     def role(self, obj):
         current_profile = obj
         if not Membership.objects.filter(ymht=current_profile, is_active=True).exists():
@@ -215,16 +216,12 @@ class profileAdmin(admin.ModelAdmin):
 
         current_members = Membership.objects.filter(ymht=current_profile, is_active=True)
         count = 0
+        current_centers = ""
         for member in current_members:
             if member.is_active:
                 center = member.center
-                if count > 0:
-                    count += 1
-                    current_centers += "(%s) %s, %s "%(count, center.center_name, center.city.name)
-                else:
-                    #current_roles.append(member.role.level)
-                    count += 1
-                    current_centers = "%s %s, %s " %("(1)", center.center_name, center.city.name)
+                count += 1
+                current_centers += "(%s) %s, %s " % (count, center.center_name, center.city.name)
         return current_centers
 
     def get_form(self, request, obj=None, **kwargs):
@@ -258,7 +255,7 @@ class profileAdmin(admin.ModelAdmin):
 # For clarification on how to operate on list of Querysets, please visit:
 # http://simeonfranklin.com/blog/2011/jun/14/best-way-or-list-django-orm-q-objects/
         for i, item in enumerate(current_roles):
-            if current_roles[i] > 1:
+            if current_roles[i] > PARTICIPANT_ROLE_LEVEL:
                 memberships.append(Membership.objects.filter(
                     center=current_centers[i],
                     age_group=current_age_groups[i],
