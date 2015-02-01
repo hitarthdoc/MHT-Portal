@@ -209,6 +209,9 @@ class profileAdmin(admin.ModelAdmin):
             return " "
         return Role.objects.get(level=max_role_level)
 
+    role.short_description = 'Role'
+    role.admin_order_field = 'membership__role__role'
+
     def center_name(self, obj):
         current_profile = obj
         if not Membership.objects.filter(ymht=current_profile, is_active=True).exists():
@@ -223,6 +226,8 @@ class profileAdmin(admin.ModelAdmin):
                 count += 1
                 current_centers += "(%s) %s, %s " % (count, center.center_name, center.city.name)
         return current_centers
+
+    center_name.admin_order_field = 'membership__center__center_name'
 
     def get_form(self, request, obj=None, **kwargs):
         self.exclude = []
