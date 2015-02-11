@@ -62,9 +62,9 @@ class Report(models.Model):
 
     def get_default_created_by():
         try:
-            return profile.objects.get(id=1)
+            return User.objects.get(id=1)
         except:
-            return profile.objects.none()
+            return User.objects.none()
 
     HOURS_CHOICES = ((1, '1 Hour'), (2, '2 Hour'), (3, '3 Hour'), (4, '4 Hour'),
                      (5, '5 Hour'), (6, '6 Hour'))
