@@ -6,7 +6,7 @@ from django.forms import CheckboxSelectMultiple, SelectMultiple
 from .models import *
 from profile.models import Membership, profile, Center, Role
 from actions import export_as_csv
-
+from constants import PARTICIPANT_ROLE_LEVEL
 
 def get_current_user_details(user):
     current_profile = profile.objects.get(user=user)
@@ -20,8 +20,30 @@ def get_current_user_details(user):
     return current_profile, current_members, current_centers, current_age_groups
 
 
+def return_status(request, fields, obj=None, readonly_fields=()):
+    if request.user.is_superuser:
+        return "Superuser"
+    if obj:
+        if (obj.approved is True) and (request.user != obj.created_by):
+            return "Other User"
+        else:
+            return "Center Coordinator"
+    else:
+        return "New Object"
+    # if request.user.is_superuser:
+    #     return []
+    # if obj:
+    #     if (obj.approved is True) and (request.user != obj.created_by):
+    #         return readonly_fields + fields
+    #     else:
+    #         return []
+    # else:
+    #     return []
+
+
 class SessionFlowInline(admin.TabularInline):
     model = SessionFlow
+    fields = ('session', 'time', 'activity', 'description', 'details')
     extra = 1
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size': '20'})},
@@ -29,35 +51,37 @@ class SessionFlowInline(admin.TabularInline):
     }
 
     def get_readonly_fields(self, request, obj=None):
-        user_is_of_current_center = False
-        if obj:
-            if (obj.approved is True) and (request.user != obj.created_by):
-                return self.readonly_fields + (
-                    'session', 'time', 'activity',
-                    'description', 'details')
-            else:
-                return []
-        else:
-            return []
+        user_is_coord_of_current_center = False
+        status = return_status(request, self.fields, obj)
+        result = {
+                'Superuser': [],
+                'Other User': self.readonly_fields + self.fields,
+                'Center Coordinator': [],
+                'New Object': [],
+            }[status]
+        return result
 
 
 class SessionMediaInline(admin.TabularInline):
     model = SessionMedia
-
+    fields = ('session', 'title', 'category', 'attachment',)
     extra = 1
 
     def get_readonly_fields(self, request, obj=None):
-        if obj:
-            if (obj.approved is True) and (request.user != obj.created_by):
-                return self.readonly_fields + ('session', 'title', 'category', 'attachment')
-            else:
-                return []
-        else:
-            return []
+        user_is_coord_of_current_center = False
+        status = return_status(request, self.fields, obj)
+        result = {
+                'Superuser': [],
+                'Other User': self.readonly_fields + self.fields,
+                'Center Coordinator': [],
+                'New Object': [],
+            }[status]
+        return result
 
 
 class AttendanceInline(admin.TabularInline):
     model = Attendance
+    fields = ('ymht',)
     filter_horizontal = ("ymht",)
     extra = 1
     max_num = 1
@@ -65,13 +89,15 @@ class AttendanceInline(admin.TabularInline):
     actions = [export_as_csv]
 
     def get_readonly_fields(self, request, obj=None):
-        if obj:
-            if (obj.approved is True) and (request.user != obj.created_by):
-                return self.readonly_fields + ('ymht',)
-            else:
-                return []
-        else:
-            return []
+        user_is_coord_of_current_center = False
+        status = return_status(request, self.fields, obj)
+        result = {
+                'Superuser': [],
+                'Other User': self.readonly_fields + self.fields,
+                'Center Coordinator': [],
+                'New Object': [],
+            }[status]
+        return result
 
     # TODO: Change the size of manytomany widget because attendance manytomany field is very small
 
@@ -98,6 +124,7 @@ class AttendanceInline(admin.TabularInline):
 
 class CoordAttendanceInline(admin.TabularInline):
     model = CoordinatorsAttendance
+    fields = ('coords',)
     filter_horizontal = ("coords",)
     max_num = 1
     extra = 1
@@ -105,22 +132,15 @@ class CoordAttendanceInline(admin.TabularInline):
     actions = [export_as_csv]
 
     def get_readonly_fields(self, request, obj=None):
-        if obj:
-            if (obj.approved is True) and (request.user != obj.created_by):
-                return ('coords',)
-            else:
-                return []
-        else:
-            return []
-
-    # def get_readonly_fields(self, request, obj=None):
-    #   if obj:
-    #       if obj.approved == True:
-    #           return ('coords', 'session')
-    #       else:
-    #           return []
-    #   else:
-    #       return []
+        user_is_coord_of_current_center = False
+        status = return_status(request, self.fields, obj)
+        result = {
+                'Superuser': [],
+                'Other User': self.readonly_fields + self.fields,
+                'Center Coordinator': [],
+                'New Object': [],
+            }[status]
+        return result
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if not profile.objects.filter(user=request.user).exists():
@@ -159,6 +179,7 @@ class ReportAdmin(admin.ModelAdmin):
         AttendanceInline,
         CoordAttendanceInline,
     ]
+    fields = ('session_name', 'improvement', 'category', 'attachment', 'created_by', 'approved')
     list_display = ('session_name', 'created_by', 'approved')
     # TODO: If the coordinator of the report opens the report, then it should not
     # be read only. All other fields of other inlines e.g. Attendance, media should
@@ -166,15 +187,15 @@ class ReportAdmin(admin.ModelAdmin):
     formfield_overrides = {models.ManyToManyField: {'widget': SelectMultiple(attrs={'size': '10'})}, }
 
     def get_readonly_fields(self, request, obj=None):
-        if request.user.is_superuser:
-            return []
-        if obj:
-            if (obj.approved is True) and (request.user != obj.created_by):
-                return self.readonly_fields + ('session_name', 'improvement', 'category', 'attachment', 'created_by', 'approved')
-            else:
-                return ['created_by']
-        else:
-            return []
+        user_is_coord_of_current_center = False
+        status = return_status(request, self.fields, obj)
+        result = {
+                'Superuser': [],
+                'Other User': self.readonly_fields + self.fields,
+                'Center Coordinator': ['created_by'],
+                'New Object': [],
+            }[status]
+        return result
 
     def queryset(self, request):
         qs = super(ReportAdmin, self).queryset(request)
@@ -282,10 +303,15 @@ class NewSessionAdmin(admin.ModelAdmin):
     search_fields = ('name', 'location')
 
     def get_readonly_fields(self, request, obj=None):
-        if obj:
-            return ["created_by"]
-        else:
-            return []
+        user_is_coord_of_current_center = False
+        status = return_status(request, self.fields, obj)
+        result = {
+                'Superuser': [],
+                'Other User': self.readonly_fields + self.fields,
+                'Center Coordinator': [],
+                'New Object': [],
+            }[status]
+        return result
 
     def queryset(self, request):
         qs = super(NewSessionAdmin, self).queryset(request)
@@ -324,7 +350,7 @@ class NewSessionAdmin(admin.ModelAdmin):
         for member in current_members:
             if member.is_active:
                 # Only if helper or above then can add the center
-                if member.role.level > 1:
+                if member.role.level > PARTICIPANT_ROLE_LEVEL:
                     current_centers_pk.append(member.center.pk)
                     current_age_group_pk.append(member.age_group.pk)
         if db_field.name == 'center_name':
@@ -336,11 +362,9 @@ class NewSessionAdmin(admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
 
         if db_field.name == 'created_by':
-            kwargs['queryset'] = User.objects.filter(pk=request.user.pk)
+            kwargs['queryset'] = request.user
 
         return super(NewSessionAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
-
-    # for approval
 
     def get_form(self, request, obj=None, **kwargs):
         if request.user.is_superuser:
