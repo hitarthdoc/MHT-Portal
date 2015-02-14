@@ -1,7 +1,15 @@
 import datetime
+from django.core.validators import RegexValidator
+
 YEAR_CHOICES = []
 for r in range(1980, (datetime.datetime.now().year+1)):
     YEAR_CHOICES.append((r,r))
+
+only_digits_validator = [RegexValidator(
+    r'^[0-9]*$', 'Only numbers are allowed here.')]
+
+only_letters_validator = [RegexValidator(
+    r'^[a-zA-Z]*$', 'Numbers are not allowed here.')]
 
 def return_status(request, obj=None):
     if request.user.is_superuser:
