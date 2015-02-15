@@ -5,12 +5,16 @@ YEAR_CHOICES = []
 for r in range(1980, (datetime.datetime.now().year+1)):
     YEAR_CHOICES.append((r,r))
 
+# Used in profile/models to validate names and numbers
 only_digits_validator = [RegexValidator(
     r'^[0-9]*$', 'Only numbers are allowed here.')]
 
+# Used in profile/models to validate names and numbers
 only_letters_validator = [RegexValidator(
     r'^[a-zA-Z]*$', 'Numbers are not allowed here.')]
 
+
+# Used in Sessions/admin
 def return_status(request, obj=None):
     if request.user.is_superuser:
         return "Superuser"
@@ -23,6 +27,7 @@ def return_status(request, obj=None):
         return "New Object"
 
 
+# Used in Sessions/admin
 def global_get_readonly_fields(caller, request, obj=None):
     user_is_coord_of_current_center = False
     status = return_status(request, obj)

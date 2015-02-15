@@ -6,7 +6,13 @@ from django.forms import CheckboxSelectMultiple, SelectMultiple
 from .models import *
 from profile.models import Membership, profile, Center, Role
 from actions import export_as_csv
-from constants import PARTICIPANT_ROLE_LEVEL
+from constants import *
+
+#was accessing from constants until 10:30 PM, 14/2/2015, hence temporarily moved
+PARTICIPANT_ROLE_LEVEL = 1
+HELPER_ROLE_LEVEL = 2
+COORD_ROLE_LEVEL = 3
+
 
 def get_current_user_details(user):
     current_profile = profile.objects.get(user=user)
@@ -20,25 +26,9 @@ def get_current_user_details(user):
     return current_profile, current_members, current_centers, current_age_groups
 
 
-def return_status(request, fields, obj=None, readonly_fields=()):
-    if request.user.is_superuser:
-        return "Superuser"
-    if obj:
-        if (obj.approved is True) and (request.user != obj.created_by):
-            return "Other User"
-        else:
-            return "Center Coordinator"
-    else:
-        return "New Object"
-    # if request.user.is_superuser:
-    #     return []
-    # if obj:
-    #     if (obj.approved is True) and (request.user != obj.created_by):
-    #         return readonly_fields + fields
-    #     else:
-    #         return []
-    # else:
-    #     return []
+# def return_status(request, fields, obj=None, readonly_fields=()):
+# def get_readonly_fields(fields, request, obj=None):
+#   Both these functions are defined in py  
 
 
 class SessionFlowInline(admin.TabularInline):
@@ -51,15 +41,7 @@ class SessionFlowInline(admin.TabularInline):
     }
 
     def get_readonly_fields(self, request, obj=None):
-        user_is_coord_of_current_center = False
-        status = return_status(request, self.fields, obj)
-        result = {
-                'Superuser': [],
-                'Other User': self.readonly_fields + self.fields,
-                'Center Coordinator': [],
-                'New Object': [],
-            }[status]
-        return result
+        return global_get_readonly_fields(self, request, obj)
 
 
 class SessionMediaInline(admin.TabularInline):
@@ -68,15 +50,7 @@ class SessionMediaInline(admin.TabularInline):
     extra = 1
 
     def get_readonly_fields(self, request, obj=None):
-        user_is_coord_of_current_center = False
-        status = return_status(request, self.fields, obj)
-        result = {
-                'Superuser': [],
-                'Other User': self.readonly_fields + self.fields,
-                'Center Coordinator': [],
-                'New Object': [],
-            }[status]
-        return result
+        return global_get_readonly_fields(self, request, obj)
 
 
 class AttendanceInline(admin.TabularInline):
@@ -89,15 +63,7 @@ class AttendanceInline(admin.TabularInline):
     actions = [export_as_csv]
 
     def get_readonly_fields(self, request, obj=None):
-        user_is_coord_of_current_center = False
-        status = return_status(request, self.fields, obj)
-        result = {
-                'Superuser': [],
-                'Other User': self.readonly_fields + self.fields,
-                'Center Coordinator': [],
-                'New Object': [],
-            }[status]
-        return result
+        return global_get_readonly_fields(self, request, obj)
 
     # TODO: Change the size of manytomany widget because attendance manytomany field is very small
 
@@ -105,7 +71,7 @@ class AttendanceInline(admin.TabularInline):
         # If profile for the current user does not exist, then
         if not profile.objects.filter(user=request.user).exists():
             if db_field.name == 'ymht':
-                participant_or_helper = Role.objects.filter(level__lt=3)
+                participant_or_helper = Role.objects.filter(level__lt=COORD_ROLE_LEVEL)
                 part_members = Membership.objects.filter(role__in=participant_or_helper)
                 participant_profiles = profile.objects.filter(membership__in=part_members)
                 kwargs['queryset'] = participant_profiles.distinct()
@@ -114,7 +80,7 @@ class AttendanceInline(admin.TabularInline):
         current_profile, current_members, current_centers, current_age_groups = get_current_user_details(request.user)
 
         if db_field.name == 'ymht':
-            participant_or_helper = Role.objects.filter(level__lt=3)
+            participant_or_helper = Role.objects.filter(level__lt=COORD_ROLE_LEVEL)
             part_members = Membership.objects.filter(role__in=participant_or_helper, is_active=True)
             part_members = part_members.filter(center__in=current_centers, age_group__in=current_age_groups)
             participant_profiles = profile.objects.filter(membership__in=part_members)
@@ -132,21 +98,13 @@ class CoordAttendanceInline(admin.TabularInline):
     actions = [export_as_csv]
 
     def get_readonly_fields(self, request, obj=None):
-        user_is_coord_of_current_center = False
-        status = return_status(request, self.fields, obj)
-        result = {
-                'Superuser': [],
-                'Other User': self.readonly_fields + self.fields,
-                'Center Coordinator': [],
-                'New Object': [],
-            }[status]
-        return result
+        return global_get_readonly_fields(self, request, obj)
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if not profile.objects.filter(user=request.user).exists():
             if db_field.name == 'coords':
                 try:
-                    coordinator = Role.objects.get(level=3)  # NOTE: Level 3 implies coordinator
+                    coordinator = Role.objects.get(level=COORD_ROLE_LEVEL)
                     coords_members = Membership.objects.filter(role=coordinator)
                     coords_profiles = profile.objects.filter(membership__in=coords_members)
                     kwargs['queryset'] = coords_profiles.distinct()
@@ -185,10 +143,11 @@ class ReportAdmin(admin.ModelAdmin):
     # be read only. All other fields of other inlines e.g. Attendance, media should
     # also be read only
     formfield_overrides = {models.ManyToManyField: {'widget': SelectMultiple(attrs={'size': '10'})}, }
-
+    actions = [export_as_csv]
+    
     def get_readonly_fields(self, request, obj=None):
         user_is_coord_of_current_center = False
-        status = return_status(request, self.fields, obj)
+        status = return_status(request, obj)
         result = {
                 'Superuser': [],
                 'Other User': self.readonly_fields + self.fields,
@@ -303,15 +262,7 @@ class NewSessionAdmin(admin.ModelAdmin):
     search_fields = ('name', 'location')
 
     def get_readonly_fields(self, request, obj=None):
-        user_is_coord_of_current_center = False
-        status = return_status(request, self.fields, obj)
-        result = {
-                'Superuser': [],
-                'Other User': self.readonly_fields + self.fields,
-                'Center Coordinator': [],
-                'New Object': [],
-            }[status]
-        return result
+        return global_get_readonly_fields(self, request, obj)
 
     def queryset(self, request):
         qs = super(NewSessionAdmin, self).queryset(request)

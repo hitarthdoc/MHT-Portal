@@ -125,16 +125,19 @@ class SessionMedia(models.Model):
 
 
 class Attendance(models.Model):
+    attendance_name = "Attendance"
     # TODO: Change wherever there is ymht to either profile or MHT for further expansion
     ymht = models.ManyToManyField(profile, null=True, verbose_name='MHTs')
     session = models.ForeignKey(Report, null=True)
 
     class Meta:
         verbose_name_plural = "Attendance"
+    def __unicode__(self):
+        return '%s' % (self.attendance_name)
 
 
 class CoordinatorsAttendance(models.Model):
-
+    coords_name = "Coordinators' Attendance"
     coords = models.ManyToManyField(profile, null=True, verbose_name='Coordinators')
 
     # coordinators = models.ManyToManyField(profile, null=True)
@@ -142,3 +145,5 @@ class CoordinatorsAttendance(models.Model):
 
     class Meta:
         verbose_name_plural = "Coordinator's Attendance"
+    def __unicode__(self):
+        return '%s' % (self.coords_name)
