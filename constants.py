@@ -6,11 +6,11 @@ for r in range(1980, (datetime.datetime.now().year+1)):
     YEAR_CHOICES.append((r,r))
 
 # Used in profile/models to validate names and numbers
-only_digits_validator = [RegexValidator(
+ONLY_DIGITS_VALIDATOR = [RegexValidator(
     r'^[0-9]*$', 'Only numbers are allowed here.')]
 
 # Used in profile/models to validate names and numbers
-only_letters_validator = [RegexValidator(
+ONLY_LETTERS_VALIDATOR = [RegexValidator(
     r'^[a-zA-Z]*$', 'Numbers are not allowed here.')]
 
 

@@ -37,7 +37,7 @@ class profile(models.Model):
         Helpers and Coordinators. In case of Participants, please leave this
         field blank.""")
     first_name = models.CharField(
-        max_length=255, validators=constants.only_letters_validator)
+        max_length=255, validators=constants.ONLY_LETTERS_VALIDATOR)
     last_name = models.CharField(max_length=255)
     gender = models.CharField(max_length=25, blank=False, null=False,
                               choices=GENDER_CHOICES, default='male')
@@ -50,16 +50,16 @@ class profile(models.Model):
         blank=True, null=True, help_text="Date Format: DD-MM-YYYY")
     father_name = models.CharField(
         max_length=255, verbose_name="Father's name",
-        validators=constants.only_letters_validator)
+        validators=constants.ONLY_LETTERS_VALIDATOR)
     father_contact = models.CharField(
         max_length=10, blank=True, null=True, verbose_name="Father's contact",
-        validators=constants.only_digits_validator)
+        validators=constants.ONLY_DIGITS_VALIDATOR)
     mother_name = models.CharField(
         max_length=255, verbose_name="Mother's name",
-        validators=constants.only_letters_validator)
+        validators=constants.ONLY_LETTERS_VALIDATOR)
     mother_contact = models.CharField(
         max_length=10, blank=True, null=True,
-        verbose_name="Mother's contact", validators=constants.only_digits_validator)
+        verbose_name="Mother's contact", validators=constants.ONLY_DIGITS_VALIDATOR)
     profile_picture = models.ImageField(
         upload_to=profile_picture_file_name, blank=True, null=True)
 
@@ -73,7 +73,7 @@ class profile(models.Model):
 
 class YMHTMobile(models.Model):
     profile = models.ForeignKey(profile)
-    mobile = models.CharField(max_length=10, validators=constants.only_digits_validator)
+    mobile = models.CharField(max_length=10, validators=constants.ONLY_DIGITS_VALIDATOR)
     is_active = models.BooleanField(default=False)
 
     def __unicode__(self):
@@ -102,7 +102,7 @@ class YMHTAddress(models.Model):
     address_3 = models.CharField(max_length=255, blank=True, null=True)
     landmark = models.CharField(max_length=255, blank=True, null=True)
     city = models.ForeignKey(City)
-    zipcode = models.CharField(max_length=6, validators=constants.only_digits_validator)
+    zipcode = models.CharField(max_length=6, validators=constants.ONLY_DIGITS_VALIDATOR)
     current_address = models.BooleanField(default=False)
 
     def __unicode__(self):
