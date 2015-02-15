@@ -1,19 +1,13 @@
 from django.contrib import admin
-# Please refer to this site for explanation of why this is done:
-from django.db.models import Q
-from operator import __or__ as OR
-from itertools import chain
-# http://simeonfranklin.com/blog/2011/jun/14/best-way-or-list-django-orm-q-objects/
-from profile.models import Membership, Center, profile
-from masters.models import Role
-from .models import (profile, YMHTMobile,
-                     YMHTEmail, YMHTAddress, YMHTEducation, YMHTJob,
-                     Membership,
+from masters.models import Role, Center
+from .models import (profile, Membership,
+                     YMHTMobile, YMHTEmail, YMHTAddress, YMHTEducation, YMHTJob,
                      GNCSewaDetails, LocalEventSewaDetails, GlobalEventSewaDetails)
 from Sessions.models import *
 from django_countries.fields import CountryField
 from django import forms
 from constants import PARTICIPANT_ROLE_LEVEL
+
 
 class YMHTMobileInline(admin.StackedInline):
     model = YMHTMobile
@@ -156,7 +150,7 @@ class YMHTMembershipInline(admin.StackedInline):
 # options, and that would change the MHT's details, which we don't want.
 
 
-class GlobalEventSewaDetailsInline(admin.StackedInline):
+class GlobalEventSewaDetailsInline(admin.TabularInline):
     model = GlobalEventSewaDetails
     extra = 1
 
@@ -256,16 +250,13 @@ class profileAdmin(admin.ModelAdmin):
                 current_roles.append(member.role.level)
                 current_centers.append(member.center)
                 current_age_groups.append(member.age_group)
-        memberships = []
-# For clarification on how to operate on list of Querysets, please visit:
-# http://simeonfranklin.com/blog/2011/jun/14/best-way-or-list-django-orm-q-objects/
         for i, item in enumerate(current_roles):
             if current_roles[i] > PARTICIPANT_ROLE_LEVEL:
-                memberships.append(Membership.objects.filter(
+                memberships = Membership.objects.filter(
                     center=current_centers[i],
                     age_group=current_age_groups[i],
-                    role__level__lte=current_roles[i]))
-        qs = qs.filter(membership__in=reduce(OR, memberships))
+                    role__level__lte=current_roles[i])
+        qs = qs.filter(membership__in=memberships)
         return qs.distinct()
 
     def get_formsets(self, request, obj=None):
