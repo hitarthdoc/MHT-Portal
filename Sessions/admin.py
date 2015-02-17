@@ -68,22 +68,18 @@ class AttendanceInline(admin.TabularInline):
     # TODO: Change the size of manytomany widget because attendance manytomany field is very small
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
-        # If profile for the current user does not exist, then
-        if not profile.objects.filter(user=request.user).exists():
-            if db_field.name == 'ymht':
-                participant_or_helper = Role.objects.filter(level__lt=COORD_ROLE_LEVEL)
-                part_members = Membership.objects.filter(role__in=participant_or_helper)
-                participant_profiles = profile.objects.filter(membership__in=part_members)
-                kwargs['queryset'] = participant_profiles.distinct()
-            return super(AttendanceInline, self).formfield_for_manytomany(db_field, request, **kwargs)
-
-        current_profile, current_members, current_centers, current_age_groups = get_current_user_details(request.user)
-
+        # pnh_members represents Memberships of Participants and helpers
         if db_field.name == 'ymht':
-            participant_or_helper = Role.objects.filter(level__lt=COORD_ROLE_LEVEL)
-            part_members = Membership.objects.filter(role__in=participant_or_helper, is_active=True)
-            part_members = part_members.filter(center__in=current_centers, age_group__in=current_age_groups)
-            participant_profiles = profile.objects.filter(membership__in=part_members)
+            # pnh_members represents Memberships of Participants and helpers
+            pnh_members = Membership.objects.filter(role__level__lt=COORD_ROLE_LEVEL)
+            if profile.objects.filter(user=request.user).exists():
+            # If profile for the current user exists, then this part is executed
+                current_profile, current_members, current_centers, current_age_groups = get_current_user_details(request.user)
+                pnh_members = pnh_members.filter(is_active=True, center__in=current_centers,
+                                                 age_group__in=current_age_groups)
+            # distinct is used because the above line may return duplicate profiles
+            participant_profiles = profile.objects.filter(membership__in=pnh_members)        
+            # distinct is used because the above line may return duplicate profiles
             kwargs['queryset'] = participant_profiles.distinct()
         return super(AttendanceInline, self).formfield_for_manytomany(db_field, request, **kwargs)
 
@@ -101,30 +97,12 @@ class CoordAttendanceInline(admin.TabularInline):
         return global_get_readonly_fields(self, request, obj)
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
-        if not profile.objects.filter(user=request.user).exists():
-            if db_field.name == 'coords':
-                try:
-                    coordinator = Role.objects.get(level=COORD_ROLE_LEVEL)
-                    coords_members = Membership.objects.filter(role=coordinator)
-                    coords_profiles = profile.objects.filter(membership__in=coords_members)
-                    kwargs['queryset'] = coords_profiles.distinct()
-                except:
-                    pass
-            return super(CoordAttendanceInline, self).formfield_for_manytomany(db_field, request, **kwargs)
-
-        current_profile = profile.objects.get(user=request.user)
-        current_members = Membership.objects.filter(ymht=current_profile)
-        current_centers = []
-        current_age_groups = []
-        for member in current_members:
-            if member.is_active:
-                current_centers.append(member.center)
-                current_age_groups.append(member.age_group)
-
         if db_field.name == 'coords':
-            coordinator = Role.objects.get(role='Coordinator')
-            coords_members = Membership.objects.filter(role=coordinator)
-            coords_members = coords_members.filter(center__in=current_centers, age_group__in=current_age_groups)
+            coords_members = Membership.objects.filter(role__level=COORD_ROLE_LEVEL)
+            if profile.objects.filter(user=request.user).exists():
+                current_profile, current_members, current_centers, current_age_groups = get_current_user_details(request.user)
+                coords_members = coords_members.filter(center__in=current_centers,
+                                                       age_group__in=current_age_groups)
             coords_profiles = profile.objects.filter(membership__in=coords_members)
             kwargs['queryset'] = coords_profiles.distinct()
         return super(CoordAttendanceInline, self).formfield_for_manytomany(db_field, request, **kwargs)
@@ -142,8 +120,7 @@ class ReportAdmin(admin.ModelAdmin):
     # TODO: If the coordinator of the report opens the report, then it should not
     # be read only. All other fields of other inlines e.g. Attendance, media should
     # also be read only
-    formfield_overrides = {models.ManyToManyField: {'widget': SelectMultiple(attrs={'size': '10'})}, }
-    actions = [export_as_csv]
+    # formfield_overrides = {models.ManyToManyField: {'widget': SelectMultiple(attrs={'size': '10'})}, }
     
     def get_readonly_fields(self, request, obj=None):
         user_is_coord_of_current_center = False
@@ -162,28 +139,20 @@ class ReportAdmin(admin.ModelAdmin):
             return qs
 
         approved_qs = qs.filter(approved=True)
-        if not profile.objects.filter(user=request.user).exists():
+
+        # If profile or Membership of the current user does not exist, return only approved_qs
+        if not (profile.objects.filter(user=request.user).exists() and 
+                Membership.objects.filter(is_active=True, ymht=profile.objects.get(user=request.user)).exists()):
             return approved_qs
 
-        current_profile = profile.objects.get(user=request.user)
-        if not Membership.objects.filter(ymht=current_profile).exists():
-            return approved_qs
-
-        current_members = Membership.objects.filter(ymht=current_profile)
-        current_centers = []
-        current_age_groups = []
-        current_roles = []
-        for member in current_members:
-            if member.is_active:
-                current_centers.append(member.center)
-                current_age_groups.append(member.age_group)
-                current_roles.append(member.role.level)
+        current_profile, current_members, current_centers, current_age_groups = get_current_user_details(request.user)
 
         filtered_qs = qs.filter(session_name__center_name__in=current_centers, session_name__age_group__in=current_age_groups)
         # The queryset should include both approved reports from all centers
         # and also report of one's own center
-        approved_qs = reduce(OR, [approved_qs, filtered_qs])
-        return approved_qs
+        return reduce(OR, [approved_qs, filtered_qs])
+    
+    # TODO: Cleanup from here
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if request.user.is_superuser:
@@ -195,15 +164,11 @@ class ReportAdmin(admin.ModelAdmin):
         current_profile = profile.objects.get(user=request.user)
         current_members = Membership.objects.filter(ymht=current_profile)
         current_centers_pk = []
-    #   current_age_group_pk = []
         for member in current_members:
             if member.is_active:
                 current_centers_pk.append(member.center.pk)
-            #   current_age_group_pk.append(member.age_group.pk)
         if db_field.name == 'center_name':
             kwargs['queryset'] = Center.objects.filter(pk__in=current_centers_pk)
-    #   if db_field.name == 'age_group':
-    #       kwargs['queryset'] = AgeGroup.objects.filter(pk__in=current_age_group_pk)
         return super(ReportAdmin, self).formfield_for_manytomany(db_field, request, **kwargs)
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
@@ -260,9 +225,20 @@ class ReportAdmin(admin.ModelAdmin):
 class NewSessionAdmin(admin.ModelAdmin):
     list_display = ('name', 'start_date', 'location', 'approved')
     search_fields = ('name', 'location')
-
+    fields = ['name', 'center_name', 'age_group', 'description', 'event_type',
+              'start_date', 'start_time', 'end_date', 'end_time', 'location',
+              'sms_content', 'email_subject', 'email_body', 'approved']
+              # 'created_by' is omitted because of an error
     def get_readonly_fields(self, request, obj=None):
-        return global_get_readonly_fields(self, request, obj)
+        user_is_coord_of_current_center = False
+        status = return_status(request, obj)
+        result = {
+                'Superuser': [],
+                'Other User': self.readonly_fields + self.fields,
+                'Center Coordinator': ['created_by'],
+                'New Object': [],
+            }[status]
+        return result
 
     def queryset(self, request):
         qs = super(NewSessionAdmin, self).queryset(request)

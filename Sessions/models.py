@@ -33,7 +33,6 @@ class NewSession(models.Model):
     description = models.TextField(blank=True, null=True)
     event_type = models.ForeignKey(SessionType)
     start_date = models.DateField(default=datetime.today)
-    # start_date = models.DateField()
     start_time = models.TimeField(default=datetime.now)
     end_date = models.DateField(default=datetime.today)
     end_time = models.TimeField(default=datetime.now)
