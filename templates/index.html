@@ -2,6 +2,7 @@
 
 {% block contents %}
         <h1>Attendance Report</h1>
+
 		<form action="/attendance" method="GET">			
 			Center: <select name="center" id="center">
 				{% for center in centers %}
@@ -10,9 +11,11 @@
 			</select>&nbsp;&nbsp;&nbsp;
 			Start Date:&nbsp;<input type="text" name="start">&nbsp;&nbsp;&nbsp;
 			End Date:&nbsp;<input type="text" name="end">&nbsp;&nbsp;&nbsp;
-			<input type="submit" value="Generate!">
-		</form>
+			<input type="submit" name="Generate-btn" value="Generate!">
+			<input type="submit" name="Download-btn" value="Download!">
 
+		</form>
+		
 		{% if sessions %}
 			{% for session in sessions %}
 				{{session}} --> {{session.get_attendance}}

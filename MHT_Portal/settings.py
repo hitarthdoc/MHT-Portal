@@ -125,9 +125,13 @@ ROOT_URLCONF = 'MHT_Portal.urls'
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'MHT_Portal.wsgi.application'
 
+TEMPLATE_PATH = os.path.join(BASE_DIR, 'templates')
+
 TEMPLATE_DIRS = (
-    'E:/MHT Portal/mpn/templates/admin',
-    '/Users/sidharth/Projects/MHT-Portal/templates',
+    'E:/MHT-Portal/MHT-Portal-reports/templates/',
+    TEMPLATE_PATH,
+    #'E:/MHT Portal/mpn/templates/admin',
+    #'/Users/sidharth/Projects/MHT-Portal/templates',
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
