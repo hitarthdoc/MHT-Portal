@@ -28,7 +28,7 @@ def get_current_user_details(user):
 
 # def return_status(request, fields, obj=None, readonly_fields=()):
 # def get_readonly_fields(fields, request, obj=None):
-#   Both these functions are defined in py  
+#   Both these functions are defined in constants.py  
 
 
 class SessionFlowInline(admin.TabularInline):
