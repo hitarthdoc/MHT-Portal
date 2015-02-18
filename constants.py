@@ -28,11 +28,10 @@ def global_get_readonly_fields(caller, request, obj=None):
 
 #function to return path for the porfile picture
 def profile_picture_file_name(instance, filename):
-    try:
-        return '/'.join(['profile', instance.user.username, filename])
-    except:
-        return '/'.join(['profile', 'YMHTians', filename])
-
+  try:
+    return '/'.join(['profile', instance.user.username, filename])
+  except:
+    return '/'.join(['profile', 'YMHTians', filename])
 
 # Currently not used in Profile events but kept as reference 
 EVENT_CATEGORY_CHOICES = ((0, 'GNC Day'),
@@ -49,6 +48,13 @@ YEAR_CHOICES = []
 for r in range(1980, (datetime.datetime.now().year+1)):
     YEAR_CHOICES.append((r,r))
 
+GENDER_CHOICES = (('male', "Male"),
+              ('female', "Female"))
+
+EDU_CHOICES = (('school', "School"),
+               ('college', "College"))
+
+ATTENDED_DETAILS = ((1, 'All Days'), (2, 'Partial Days'))
 
 PARTICIPANT_ROLE_LEVEL = 1
 HELPER_ROLE_LEVEL = 2
@@ -60,14 +66,3 @@ ONLY_DIGITS_VALIDATOR = [RegexValidator(
 
 ONLY_LETTERS_VALIDATOR = [RegexValidator(
     r'^[a-zA-Z]*$', 'Only Letters Please!')]
-
-
-# These Constants have not been imported into profile/models but have been kept
-# for documentation. To change these, go to the original file for 
-# Edu_choices = (('school', "School"),
-#                ('college', "College"))
-
-# ATTENDED_DETAILS = ((1, 'All Days'), (2, 'Partial Days'))
-
-# GENDER_CHOICES = (('male', "Male"),
-#                   ('female', "Female"))
