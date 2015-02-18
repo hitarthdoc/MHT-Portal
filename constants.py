@@ -1,19 +1,6 @@
 import datetime
 from django.core.validators import RegexValidator
 
-YEAR_CHOICES = []
-for r in range(1980, (datetime.datetime.now().year+1)):
-    YEAR_CHOICES.append((r,r))
-
-# Used in profile/models to validate names and numbers
-ONLY_DIGITS_VALIDATOR = [RegexValidator(
-    r'^[0-9]*$', 'Only numbers are allowed here.')]
-
-# Used in profile/models to validate names and numbers
-ONLY_LETTERS_VALIDATOR = [RegexValidator(
-    r'^[a-zA-Z]*$', 'Numbers are not allowed here.')]
-
-
 # Used in Sessions/admin
 def return_status(request, obj=None):
     if request.user.is_superuser:
@@ -39,6 +26,13 @@ def global_get_readonly_fields(caller, request, obj=None):
         }[status]
     return result
 
+#function to return path for the porfile picture
+def profile_picture_file_name(instance, filename):
+    try:
+        return '/'.join(['profile', instance.user.username, filename])
+    except:
+        return '/'.join(['profile', 'YMHTians', filename])
+
 
 # Currently not used in Profile events but kept as reference 
 EVENT_CATEGORY_CHOICES = ((0, 'GNC Day'),
@@ -50,9 +44,22 @@ EVENT_CATEGORY_CHOICES = ((0, 'GNC Day'),
                           (6, 'Janma Jayanti'),
                           (7, 'Picnic'))
 
+
+YEAR_CHOICES = []
+for r in range(1980, (datetime.datetime.now().year+1)):
+    YEAR_CHOICES.append((r,r))
+
+
 PARTICIPANT_ROLE_LEVEL = 1
 HELPER_ROLE_LEVEL = 2
 COORD_ROLE_LEVEL = 3
+
+#Validators for the charfield
+ONLY_DIGITS_VALIDATOR = [RegexValidator(
+    r'^[0-9]*$', 'Only Digits Please!')]
+
+ONLY_LETTERS_VALIDATOR = [RegexValidator(
+    r'^[a-zA-Z]*$', 'Only Letters Please!')]
 
 
 # These Constants have not been imported into profile/models but have been kept

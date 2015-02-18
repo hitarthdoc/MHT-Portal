@@ -1,9 +1,7 @@
+import datetime
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext, ugettext_lazy as _
-from django.contrib.auth.models import User
-from django.contrib import admin
-import datetime
 from django_countries.fields import CountryField
 from masters.models import City
 from masters.models import State
@@ -17,14 +15,9 @@ from masters.models import Center
 from masters.models import GlobalEvent
 from masters.models import LocalEvent
 from masters.models import GNCSewa
-import constants
-
-def profile_picture_file_name(instance, filename):
-    try:
-        return '/'.join(['profile', instance.user.username, filename])
-    except:
-        return '/'.join(['profile', 'YMHTians', filename])
-
+from constants import ONLY_DIGITS_VALIDATOR
+from constants import ONLY_LETTERS_VALIDATOR
+from constants import profile_picture_file_name
 
 class profile(models.Model):
 
@@ -37,7 +30,7 @@ class profile(models.Model):
         Helpers and Coordinators. In case of Participants, please leave this
         field blank.""")
     first_name = models.CharField(
-        max_length=255, validators=constants.ONLY_LETTERS_VALIDATOR)
+        max_length=255, validators=ONLY_LETTERS_VALIDATOR)
     last_name = models.CharField(max_length=255)
     gender = models.CharField(max_length=25, blank=False, null=False,
                               choices=GENDER_CHOICES, default='male')
@@ -50,22 +43,18 @@ class profile(models.Model):
         blank=True, null=True, help_text="Date Format: DD-MM-YYYY")
     father_name = models.CharField(
         max_length=255, verbose_name="Father's name",
-        validators=constants.ONLY_LETTERS_VALIDATOR)
+        validators=ONLY_LETTERS_VALIDATOR)
     father_contact = models.CharField(
         max_length=10, blank=True, null=True, verbose_name="Father's contact",
-        validators=constants.ONLY_DIGITS_VALIDATOR)
+        validators=ONLY_DIGITS_VALIDATOR)
     mother_name = models.CharField(
         max_length=255, verbose_name="Mother's name",
-        validators=constants.ONLY_LETTERS_VALIDATOR)
+        validators=ONLY_LETTERS_VALIDATOR)
     mother_contact = models.CharField(
         max_length=10, blank=True, null=True,
-        verbose_name="Mother's contact", validators=constants.ONLY_DIGITS_VALIDATOR)
+        verbose_name="Mother's contact", validators=ONLY_DIGITS_VALIDATOR)
     profile_picture = models.ImageField(
         upload_to=profile_picture_file_name, blank=True, null=True)
-
-    # def prof_image(self):
-    #   return '<img src="%s">' % (self.profile_picture)
-    #   prof_image.allow_tags = True
 
     def __unicode__(self):
         return '%s %s' % (self.first_name, self.last_name)
@@ -73,7 +62,7 @@ class profile(models.Model):
 
 class YMHTMobile(models.Model):
     profile = models.ForeignKey(profile)
-    mobile = models.CharField(max_length=10, validators=constants.ONLY_DIGITS_VALIDATOR)
+    mobile = models.CharField(max_length=10, validators=ONLY_DIGITS_VALIDATOR)
     is_active = models.BooleanField(default=False)
 
     def __unicode__(self):
@@ -102,7 +91,7 @@ class YMHTAddress(models.Model):
     address_3 = models.CharField(max_length=255, blank=True, null=True)
     landmark = models.CharField(max_length=255, blank=True, null=True)
     city = models.ForeignKey(City)
-    zipcode = models.CharField(max_length=6, validators=constants.ONLY_DIGITS_VALIDATOR)
+    zipcode = models.CharField(max_length=6, validators=ONLY_DIGITS_VALIDATOR)
     current_address = models.BooleanField(default=False)
 
     def __unicode__(self):
