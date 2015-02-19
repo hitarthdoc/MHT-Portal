@@ -34,7 +34,8 @@ class profile(models.Model):
     first_name = models.CharField(
         max_length=255, validators=ONLY_LETTERS_VALIDATOR)
 
-    last_name = models.CharField(max_length=255)
+    last_name = models.CharField(
+        max_length=255, validators=ONLY_LETTERS_VALIDATOR)
 
     gender = models.CharField(max_length=25, blank=False, null=False,
                               choices=GENDER_CHOICES, default='male')
@@ -90,7 +91,7 @@ class YMHTMobile(models.Model):
 
 class YMHTEmail(models.Model):
 
-    ymht = models.ForeignKey(profile)
+    profile = models.ForeignKey(profile)
 
     email = models.EmailField()
 
@@ -105,7 +106,7 @@ class YMHTEmail(models.Model):
 
 class YMHTAddress(models.Model):
 
-    ymht = models.ForeignKey(profile)
+    profile = models.ForeignKey(profile)
 
     address_1 = models.CharField(max_length=255)
 
@@ -130,7 +131,7 @@ class YMHTAddress(models.Model):
 
 class YMHTEducation(models.Model):
 
-    ymht = models.ForeignKey(profile)
+    profile = models.ForeignKey(profile)
 
     school_or_College = models.CharField(choices=EDU_CHOICES, max_length=256)
 
@@ -165,7 +166,7 @@ class YMHTEducation(models.Model):
 
 class YMHTJob(models.Model):
 
-    ymht = models.ForeignKey(profile)
+    profile = models.ForeignKey(profile)
 
     job_type = models.ForeignKey(JobType, null=True)
 
@@ -187,7 +188,7 @@ class YMHTJob(models.Model):
 
 class Membership(models.Model):
 
-    ymht = models.ForeignKey(profile)
+    profile = models.ForeignKey(profile)
 
     center = models.ForeignKey(Center, null=True)
 
@@ -205,12 +206,12 @@ class Membership(models.Model):
 
     def __unicode__(self):
         return '%s, %s at %s center for age group %s' % (
-            self.ymht, self.role, self.center, self.age_group)
+            self.profile, self.role, self.center, self.age_group)
 
 
 class GlobalEventSewaDetails(models.Model):
 
-    ymht = models.ForeignKey(profile)
+    profile = models.ForeignKey(profile)
 
     event = models.ForeignKey(GlobalEvent)
 
@@ -231,7 +232,7 @@ class GlobalEventSewaDetails(models.Model):
 
 class LocalEventSewaDetails(models.Model):
 
-    ymht = models.ForeignKey(profile)
+    profile = models.ForeignKey(profile)
 
     event = models.ForeignKey(LocalEvent)
 
@@ -250,7 +251,7 @@ class LocalEventSewaDetails(models.Model):
 
 class GNCSewaDetails(models.Model):
 
-    ymht = models.ForeignKey(profile)
+    profile = models.ForeignKey(profile)
 
     name = models.ForeignKey(GNCSewa, null=True)
 

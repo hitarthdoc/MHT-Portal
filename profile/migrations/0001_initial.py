@@ -47,7 +47,7 @@ class Migration(SchemaMigration):
         # Adding model 'YMHTEmail'
         db.create_table(u'profile_ymhtemail', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('ymht', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
+            ('profile', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
             ('email', self.gf('django.db.models.fields.EmailField')(max_length=75)),
             ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
@@ -56,7 +56,7 @@ class Migration(SchemaMigration):
         # Adding model 'YMHTAddress'
         db.create_table(u'profile_ymhtaddress', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('ymht', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
+            ('profile', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
             ('address_1', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('address_2', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
             ('address_3', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
@@ -70,20 +70,21 @@ class Migration(SchemaMigration):
         # Adding model 'YMHTEducation'
         db.create_table(u'profile_ymhteducation', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('ymht', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
-            ('type_1', self.gf('django.db.models.fields.CharField')(max_length=256)),
-            ('school_or_College', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('standard_or_Degree', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('other_Details', self.gf('django.db.models.fields.TextField')(null=True)),
-            ('year', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('profile', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
+            ('school_or_College', self.gf('django.db.models.fields.CharField')(max_length=256)),
+            ('institution_name', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('stream_or_Degree', self.gf('django.db.models.fields.CharField')(max_length=255, null=True)),
+            ('class_or_year', self.gf('django.db.models.fields.CharField')(max_length=255, null=True)),
+            ('other_Details', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
+            ('current', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
         db.send_create_signal(u'profile', ['YMHTEducation'])
 
         # Adding model 'YMHTJob'
         db.create_table(u'profile_ymhtjob', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('ymht', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
-            ('jobtype', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['masters.JobType'])),
+            ('profile', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
+            ('job_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['masters.JobType'], null=True)),
             ('experience', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['masters.Experience'])),
             ('company_name', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('designation', self.gf('django.db.models.fields.CharField')(max_length=255)),
@@ -94,21 +95,31 @@ class Migration(SchemaMigration):
         # Adding model 'Membership'
         db.create_table(u'profile_membership', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('ymht', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
+            ('profile', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
             ('center', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['masters.Center'], null=True)),
             ('age_group', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['masters.AgeGroup'])),
             ('role', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['masters.Role'])),
             ('since', self.gf('django.db.models.fields.DateField')()),
             ('till', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=True)),
         ))
         db.send_create_signal(u'profile', ['Membership'])
+
+        # Adding M2M table for field sub_role on 'Membership'
+        m2m_table_name = db.shorten_name(u'profile_membership_sub_role')
+        db.create_table(m2m_table_name, (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('membership', models.ForeignKey(orm[u'profile.membership'], null=False)),
+            ('subrole', models.ForeignKey(orm[u'masters.subrole'], null=False))
+        ))
+        db.create_unique(m2m_table_name, ['membership_id', 'subrole_id'])
 
         # Adding model 'GlobalEventSewaDetails'
         db.create_table(u'profile_globaleventsewadetails', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('profile', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
             ('event', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['masters.GlobalEvent'])),
-            ('ymht', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
+            ('department', self.gf('django.db.models.fields.CharField')(max_length=50, null=True)),
             ('attended', self.gf('django.db.models.fields.IntegerField')()),
             ('attended_days', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
             ('comments', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
@@ -118,10 +129,10 @@ class Migration(SchemaMigration):
         # Adding model 'LocalEventSewaDetails'
         db.create_table(u'profile_localeventsewadetails', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('ymht', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
+            ('profile', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
             ('event', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['masters.LocalEvent'])),
             ('sewa_dept', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('sewa_name', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('sewa_name', self.gf('django.db.models.fields.CharField')(max_length=255, null=True)),
             ('comments', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
         ))
         db.send_create_signal(u'profile', ['LocalEventSewaDetails'])
@@ -129,7 +140,7 @@ class Migration(SchemaMigration):
         # Adding model 'GNCSewaDetails'
         db.create_table(u'profile_gncsewadetails', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('ymht', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
+            ('profile', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.profile'])),
             ('name', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['masters.GNCSewa'], null=True)),
             ('project_responsible', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('comments', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
@@ -161,6 +172,9 @@ class Migration(SchemaMigration):
 
         # Deleting model 'Membership'
         db.delete_table(u'profile_membership')
+
+        # Removing M2M table for field sub_role on 'Membership'
+        db.delete_table(db.shorten_name(u'profile_membership_sub_role'))
 
         # Deleting model 'GlobalEventSewaDetails'
         db.delete_table(u'profile_globaleventsewadetails')
@@ -235,7 +249,7 @@ class Migration(SchemaMigration):
         },
         u'masters.experience': {
             'Meta': {'object_name': 'Experience'},
-            'experience': ('django.db.models.fields.CharField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'}),
+            'experience': ('django.db.models.fields.CharField', [], {'max_length': '63', 'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         u'masters.globalevent': {
@@ -275,42 +289,50 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'})
         },
+        u'masters.subrole': {
+            'Meta': {'object_name': 'SubRole'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'role': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['masters.Role']"}),
+            'sub_role': ('django.db.models.fields.CharField', [], {'max_length': '52'})
+        },
         u'profile.globaleventsewadetails': {
             'Meta': {'object_name': 'GlobalEventSewaDetails'},
             'attended': ('django.db.models.fields.IntegerField', [], {}),
             'attended_days': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'comments': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'department': ('django.db.models.fields.CharField', [], {'max_length': '50', 'null': 'True'}),
             'event': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['masters.GlobalEvent']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'ymht': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['profile.profile']"})
+            'profile': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['profile.profile']"})
         },
         u'profile.gncsewadetails': {
             'Meta': {'object_name': 'GNCSewaDetails'},
             'comments': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['masters.GNCSewa']", 'null': 'True'}),
-            'project_responsible': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'ymht': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['profile.profile']"})
+            'profile': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['profile.profile']"}),
+            'project_responsible': ('django.db.models.fields.CharField', [], {'max_length': '255'})
         },
         u'profile.localeventsewadetails': {
             'Meta': {'object_name': 'LocalEventSewaDetails'},
             'comments': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'event': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['masters.LocalEvent']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'profile': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['profile.profile']"}),
             'sewa_dept': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'sewa_name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'ymht': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['profile.profile']"})
+            'sewa_name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True'})
         },
         u'profile.membership': {
             'Meta': {'object_name': 'Membership'},
             'age_group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['masters.AgeGroup']"}),
             'center': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['masters.Center']", 'null': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'profile': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['profile.profile']"}),
             'role': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['masters.Role']"}),
             'since': ('django.db.models.fields.DateField', [], {}),
-            'till': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'ymht': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['profile.profile']"})
+            'sub_role': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['masters.SubRole']", 'symmetrical': 'False', 'blank': 'True'}),
+            'till': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'})
         },
         u'profile.profile': {
             'Meta': {'object_name': 'profile'},
@@ -338,25 +360,26 @@ class Migration(SchemaMigration):
             'current_address': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'landmark': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'ymht': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['profile.profile']"}),
+            'profile': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['profile.profile']"}),
             'zipcode': ('django.db.models.fields.CharField', [], {'max_length': '6'})
         },
         u'profile.ymhteducation': {
             'Meta': {'object_name': 'YMHTEducation'},
+            'class_or_year': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True'}),
+            'current': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'other_Details': ('django.db.models.fields.TextField', [], {'null': 'True'}),
-            'school_or_College': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'standard_or_Degree': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'type_1': ('django.db.models.fields.CharField', [], {'max_length': '256'}),
-            'year': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'ymht': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['profile.profile']"})
+            'institution_name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'other_Details': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'profile': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['profile.profile']"}),
+            'school_or_College': ('django.db.models.fields.CharField', [], {'max_length': '256'}),
+            'stream_or_Degree': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True'})
         },
         u'profile.ymhtemail': {
             'Meta': {'object_name': 'YMHTEmail'},
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '75'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'ymht': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['profile.profile']"})
+            'profile': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['profile.profile']"})
         },
         u'profile.ymhtjob': {
             'Meta': {'object_name': 'YMHTJob'},
@@ -365,8 +388,8 @@ class Migration(SchemaMigration):
             'designation': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'experience': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['masters.Experience']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'jobtype': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['masters.JobType']"}),
-            'ymht': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['profile.profile']"})
+            'job_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['masters.JobType']", 'null': 'True'}),
+            'profile': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['profile.profile']"})
         },
         u'profile.ymhtmobile': {
             'Meta': {'object_name': 'YMHTMobile'},
