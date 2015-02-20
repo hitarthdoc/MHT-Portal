@@ -54,15 +54,15 @@ class YMHTMembershipInline(admin.StackedInline):
             if not profile.objects.filter(user=request.user).exists():
                 return []
             current_profile = profile.objects.get(user=request.user)
-            if not Membership.objects.filter(ymht=current_profile).exists():
+            if not Membership.objects.filter(profile=current_profile).exists():
                 return []
-            current_members = Membership.objects.filter(ymht=current_profile)
+            current_members = Membership.objects.filter(profile=current_profile)
             current_roles = []
             for member in current_members:
                 if member.is_active:
                     current_roles.append(member.role.level)
             highest_level = max(current_roles)
-            current_obj_members = Membership.objects.filter(ymht=obj)
+            current_obj_members = Membership.objects.filter(profile=obj)
             current_obj_roles = []
             for member in current_obj_members:
                 if member.is_active:
@@ -87,7 +87,7 @@ class YMHTMembershipInline(admin.StackedInline):
             return super(YMHTMembershipInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
         current_profile = profile.objects.get(user=request.user)
-        current_members = Membership.objects.filter(ymht=current_profile)
+        current_members = Membership.objects.filter(profile=current_profile)
         current_centers_pk = []
         current_age_group_pk = []
         current_roles = []
@@ -190,9 +190,9 @@ class profileAdmin(admin.ModelAdmin):
 
     def role(self, obj):
         current_profile = obj
-        if not Membership.objects.filter(ymht=current_profile, is_active=True).exists():
+        if not Membership.objects.filter(profile=current_profile, is_active=True).exists():
             return " "
-        current_members = Membership.objects.filter(ymht=current_profile, is_active=True)
+        current_members = Membership.objects.filter(profile=current_profile, is_active=True)
         max_role_level = 0
         for member in current_members:
             if member.is_active:
@@ -208,10 +208,10 @@ class profileAdmin(admin.ModelAdmin):
 
     def center_name(self, obj):
         current_profile = obj
-        if not Membership.objects.filter(ymht=current_profile, is_active=True).exists():
+        if not Membership.objects.filter(profile=current_profile, is_active=True).exists():
             return " "
 
-        current_members = Membership.objects.filter(ymht=current_profile, is_active=True)
+        current_members = Membership.objects.filter(profile=current_profile, is_active=True)
         count = 0
         current_centers = ""
         for member in current_members:
@@ -238,10 +238,10 @@ class profileAdmin(admin.ModelAdmin):
             return profile.objects.none()
         current_profile = profile.objects.get(user=request.user)
 
-        if not Membership.objects.filter(ymht=current_profile, is_active=True).exists():
+        if not Membership.objects.filter(profile=current_profile, is_active=True).exists():
             return current_profile
 
-        current_members = Membership.objects.filter(ymht=current_profile, is_active=True)
+        current_members = Membership.objects.filter(profile=current_profile, is_active=True)
         current_centers = []
         current_age_groups = []
         current_roles = []
