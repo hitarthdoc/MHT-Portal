@@ -126,7 +126,7 @@ class SessionMedia(models.Model):
 class Attendance(models.Model):
     attendance_name = "Attendance"
     # TODO: Change wherever there is ymht to either profile or MHT for further expansion
-    ymht = models.ManyToManyField(Profile, null=True, verbose_name='MHTs')
+    profile = models.ManyToManyField(Profile, null=True, verbose_name='MHTs')
     session = models.ForeignKey(Report, null=True)
 
     class Meta:
