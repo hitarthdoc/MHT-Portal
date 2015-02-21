@@ -15,7 +15,7 @@ COORD_ROLE_LEVEL = 3
 
 
 def get_current_user_details(user):
-    current_profile = profile.objects.get(user=user)
+    current_profile = Profile.objects.get(user=user)
     current_members = Membership.objects.filter(ymht=current_profile)
     current_centers = []
     current_age_groups = []
@@ -72,13 +72,13 @@ class AttendanceInline(admin.TabularInline):
         if db_field.name == 'ymht':
             # pnh_members represents Memberships of Participants and helpers
             pnh_members = Membership.objects.filter(role__level__lt=COORD_ROLE_LEVEL)
-            if profile.objects.filter(user=request.user).exists():
+            if Profile.objects.filter(user=request.user).exists():
             # If profile for the current user exists, then this part is executed
                 current_profile, current_members, current_centers, current_age_groups = get_current_user_details(request.user)
                 pnh_members = pnh_members.filter(is_active=True, center__in=current_centers,
                                                  age_group__in=current_age_groups)
             # distinct is used because the above line may return duplicate profiles
-            participant_profiles = profile.objects.filter(membership__in=pnh_members)        
+            participant_profiles = Profile.objects.filter(membership__in=pnh_members)        
             # distinct is used because the above line may return duplicate profiles
             kwargs['queryset'] = participant_profiles.distinct()
         return super(AttendanceInline, self).formfield_for_manytomany(db_field, request, **kwargs)
@@ -99,11 +99,11 @@ class CoordAttendanceInline(admin.TabularInline):
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if db_field.name == 'coords':
             coords_members = Membership.objects.filter(role__level=COORD_ROLE_LEVEL)
-            if profile.objects.filter(user=request.user).exists():
+            if Profile.objects.filter(user=request.user).exists():
                 current_profile, current_members, current_centers, current_age_groups = get_current_user_details(request.user)
                 coords_members = coords_members.filter(center__in=current_centers,
                                                        age_group__in=current_age_groups)
-            coords_profiles = profile.objects.filter(membership__in=coords_members)
+            coords_profiles = Profile.objects.filter(membership__in=coords_members)
             kwargs['queryset'] = coords_profiles.distinct()
         return super(CoordAttendanceInline, self).formfield_for_manytomany(db_field, request, **kwargs)
 
@@ -141,8 +141,8 @@ class ReportAdmin(admin.ModelAdmin):
         approved_qs = qs.filter(approved=True)
 
         # If profile or Membership of the current user does not exist, return only approved_qs
-        if not (profile.objects.filter(user=request.user).exists() and 
-                Membership.objects.filter(is_active=True, ymht=profile.objects.get(user=request.user)).exists()):
+        if not (Profile.objects.filter(user=request.user).exists() and 
+                Membership.objects.filter(is_active=True, ymht=Profile.objects.get(user=request.user)).exists()):
             return approved_qs
 
         current_profile, current_members, current_centers, current_age_groups = get_current_user_details(request.user)
@@ -158,10 +158,10 @@ class ReportAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return super(ReportAdmin, self).formfield_for_manytomany(db_field, request, **kwargs)
 # If profile for current user does not exist, then what to do?
-        if not profile.objects.filter(user=request.user).exists():
+        if not Profile.objects.filter(user=request.user).exists():
             return super(ReportAdmin, self).formfield_for_manytomany(db_field, request, **kwargs)
 
-        current_profile = profile.objects.get(user=request.user)
+        current_profile = Profile.objects.get(user=request.user)
         current_members = Membership.objects.filter(ymht=current_profile)
         current_centers_pk = []
         for member in current_members:
@@ -174,10 +174,10 @@ class ReportAdmin(admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if request.user.is_superuser:
             return super(ReportAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
-        if not profile.objects.filter(user=request.user).exists():
+        if not Profile.objects.filter(user=request.user).exists():
             return super(ReportAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
-        current_profile = profile.objects.get(user=request.user)
+        current_profile = Profile.objects.get(user=request.user)
         current_members = Membership.objects.filter(ymht=current_profile)
         current_centers = []
         current_age_groups = []
@@ -201,10 +201,10 @@ class ReportAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return super(ReportAdmin, self).get_form(request, obj, **kwargs)
 
-        if not profile.objects.filter(user=request.user).exists():
+        if not Profile.objects.filter(user=request.user).exists():
             return super(ReportAdmin, self).get_form(request, obj, **kwargs)
 
-        current_profile = profile.objects.get(user=request.user)
+        current_profile = Profile.objects.get(user=request.user)
         current_members = Membership.objects.filter(ymht=current_profile)
         role = Role.objects.get(role='Participant')
         active_roles = []
@@ -245,9 +245,9 @@ class NewSessionAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
 
-        if not profile.objects.filter(user=request.user).exists():
+        if not Profile.objects.filter(user=request.user).exists():
             return NewSession.objects.none()
-        current_profile = profile.objects.get(user=request.user)
+        current_profile = Profile.objects.get(user=request.user)
 
         if not Membership.objects.filter(ymht=current_profile).exists():
             return NewSession.objects.none()
@@ -267,10 +267,10 @@ class NewSessionAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return super(NewSessionAdmin, self).formfield_for_manytomany(db_field, request, **kwargs)
 # If profile for current user does not exist, then what to do?
-        if not profile.objects.filter(user=request.user).exists():
+        if not Profile.objects.filter(user=request.user).exists():
             return super(NewSessionAdmin, self).formfield_for_manytomany(db_field, request, **kwargs)
 
-        current_profile = profile.objects.get(user=request.user)
+        current_profile = Profile.objects.get(user=request.user)
         current_members = Membership.objects.filter(ymht=current_profile)
         current_centers_pk = []
         current_age_group_pk = []
@@ -297,10 +297,10 @@ class NewSessionAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return super(NewSessionAdmin, self).get_form(request, obj, **kwargs)
 
-        if not profile.objects.filter(user=request.user).exists():
+        if not Profile.objects.filter(user=request.user).exists():
             return super(NewSessionAdmin, self).get_form(request, obj, **kwargs)
 
-        current_profile = profile.objects.get(user=request.user)
+        current_profile = Profile.objects.get(user=request.user)
         current_members = Membership.objects.filter(ymht=current_profile)
         role = Role.objects.get(role='Participant')
         active_roles = []
