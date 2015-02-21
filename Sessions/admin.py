@@ -4,7 +4,7 @@ from django.db import models
 from django.forms import TextInput, Textarea
 from django.forms import CheckboxSelectMultiple, SelectMultiple
 from .models import *
-from profile.models import Membership, profile, Center, Role
+from profile.models import Membership, Profile, Center, Role
 from actions import export_as_csv
 from constants import *
 

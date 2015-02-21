@@ -22,7 +22,7 @@ from constants import GENDER_CHOICES
 from constants import EDU_CHOICES
 from constants import ATTENDED_DETAILS
 
-class profile(models.Model):
+class Profile(models.Model):
 
     description = "Add/edit profiles of MHTs"
 
@@ -76,7 +76,7 @@ class profile(models.Model):
 
 class YMHTMobile(models.Model):
 
-    profile = models.ForeignKey(profile)
+    profile = models.ForeignKey(Profile)
 
     mobile = models.CharField(max_length=10, validators=ONLY_DIGITS_VALIDATOR)
 
@@ -91,7 +91,7 @@ class YMHTMobile(models.Model):
 
 class YMHTEmail(models.Model):
 
-    profile = models.ForeignKey(profile)
+    profile = models.ForeignKey(Profile)
 
     email = models.EmailField()
 
@@ -106,7 +106,7 @@ class YMHTEmail(models.Model):
 
 class YMHTAddress(models.Model):
 
-    profile = models.ForeignKey(profile)
+    profile = models.ForeignKey(Profile)
 
     address_1 = models.CharField(max_length=255)
 
@@ -131,7 +131,7 @@ class YMHTAddress(models.Model):
 
 class YMHTEducation(models.Model):
 
-    profile = models.ForeignKey(profile)
+    profile = models.ForeignKey(Profile)
 
     school_or_College = models.CharField(choices=EDU_CHOICES, max_length=256)
 
@@ -166,7 +166,7 @@ class YMHTEducation(models.Model):
 
 class YMHTJob(models.Model):
 
-    profile = models.ForeignKey(profile)
+    profile = models.ForeignKey(Profile)
 
     job_type = models.ForeignKey(JobType, null=True)
 
@@ -188,7 +188,7 @@ class YMHTJob(models.Model):
 
 class Membership(models.Model):
 
-    profile = models.ForeignKey(profile)
+    profile = models.ForeignKey(Profile)
 
     center = models.ForeignKey(Center, null=True)
 
@@ -211,7 +211,7 @@ class Membership(models.Model):
 
 class GlobalEventSewaDetails(models.Model):
 
-    profile = models.ForeignKey(profile)
+    profile = models.ForeignKey(Profile)
 
     event = models.ForeignKey(GlobalEvent)
 
@@ -232,7 +232,7 @@ class GlobalEventSewaDetails(models.Model):
 
 class LocalEventSewaDetails(models.Model):
 
-    profile = models.ForeignKey(profile)
+    profile = models.ForeignKey(Profile)
 
     event = models.ForeignKey(LocalEvent)
 
@@ -251,7 +251,7 @@ class LocalEventSewaDetails(models.Model):
 
 class GNCSewaDetails(models.Model):
 
-    profile = models.ForeignKey(profile)
+    profile = models.ForeignKey(Profile)
 
     name = models.ForeignKey(GNCSewa, null=True)
 

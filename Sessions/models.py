@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from profile.models import Center
-from profile.models import profile
+from profile.models import Profile
 from masters.models import SessionType
 from masters.models import AgeGroup
 from masters.models import Activities
@@ -126,7 +126,7 @@ class SessionMedia(models.Model):
 class Attendance(models.Model):
     attendance_name = "Attendance"
     # TODO: Change wherever there is ymht to either profile or MHT for further expansion
-    ymht = models.ManyToManyField(profile, null=True, verbose_name='MHTs')
+    ymht = models.ManyToManyField(Profile, null=True, verbose_name='MHTs')
     session = models.ForeignKey(Report, null=True)
 
     class Meta:
@@ -137,7 +137,7 @@ class Attendance(models.Model):
 
 class CoordinatorsAttendance(models.Model):
     coords_name = "Coordinators' Attendance"
-    coords = models.ManyToManyField(profile, null=True, verbose_name='Coordinators')
+    coords = models.ManyToManyField(Profile, null=True, verbose_name='Coordinators')
 
     # coordinators = models.ManyToManyField(profile, null=True)
     session = models.ForeignKey(Report, null=True)
