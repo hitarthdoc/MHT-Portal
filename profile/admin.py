@@ -61,11 +61,11 @@ class YMHTMembershipInline(admin.StackedInline):
             if not Membership.objects.filter(profile=current_profile).exists():
                 return self.readonly_fields 
 
-            current_members = Membership.objects.filter(profile=current_profile)
+            current_membership = Membership.objects.filter(profile=current_profile)
 
             current_roles = []
 
-            for member in current_members:
+            for member in current_membership:
                 if member.is_active:
                     current_roles.append(member.role.level)
 

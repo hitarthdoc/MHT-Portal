@@ -65,4 +65,4 @@ ONLY_DIGITS_VALIDATOR = [RegexValidator(
     r'^[0-9]*$', 'Only Digits Please!')]
 
 ONLY_LETTERS_VALIDATOR = [RegexValidator(
-    r'^[a-zA-Z]*$', 'Only Letters Please!')]
+    r'^[a-zA-Z\s]*$', 'Only Letters Please!')]
