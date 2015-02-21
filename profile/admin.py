@@ -53,10 +53,10 @@ class YMHTMembershipInline(admin.StackedInline):
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
-            if request.user.is_superuser or not profile.objects.filter(user=request.user).exists():
+            if request.user.is_superuser or not Profile.objects.filter(user=request.user).exists():
                 return self.readonly_fields 
 
-            current_profile = profile.objects.get(user=request.user)
+            current_profile = Profile.objects.get(user=request.user)
 
             if not Membership.objects.filter(profile=current_profile).exists():
                 return self.readonly_fields 
@@ -96,10 +96,10 @@ class YMHTMembershipInline(admin.StackedInline):
         if request.user.is_superuser:
             return super(YMHTMembershipInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
-        if not profile.objects.filter(user=request.user).exists():
+        if not Profile.objects.filter(user=request.user).exists():
             return super(YMHTMembershipInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
-        current_profile = profile.objects.get(user=request.user)
+        current_profile = Profile.objects.get(user=request.user)
         current_members = Membership.objects.filter(profile=current_profile)
         current_centers_pk = []
         current_age_group_pk = []
@@ -247,9 +247,9 @@ class profileAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
 
-        if not profile.objects.filter(user=request.user).exists():
-            return profile.objects.none()
-        current_profile = profile.objects.get(user=request.user)
+        if not Profile.objects.filter(user=request.user).exists():
+            return Profile.objects.none()
+        current_profile = Profile.objects.get(user=request.user)
 
         if not Membership.objects.filter(profile=current_profile, is_active=True).exists():
             return current_profile
