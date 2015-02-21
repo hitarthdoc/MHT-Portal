@@ -225,9 +225,9 @@ class ReportAdmin(admin.ModelAdmin):
 class NewSessionAdmin(admin.ModelAdmin):
     list_display = ('name', 'start_date', 'location', 'approved')
     search_fields = ('name', 'location')
-    fields = ['name', 'center_name', 'age_group', 'description', 'event_type',
+    fields = ('name', 'center_name', 'age_group', 'description', 'event_type',
               'start_date', 'start_time', 'end_date', 'end_time', 'location',
-              'sms_content', 'email_subject', 'email_body', 'approved']
+              'sms_content', 'email_subject', 'email_body', 'approved')
               # 'created_by' is omitted because of an error
     def get_readonly_fields(self, request, obj=None):
         user_is_coord_of_current_center = False
