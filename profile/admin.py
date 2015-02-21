@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib import admin
+from django.db.models import Max
 from django_countries.fields import CountryField
-from masters.models import Role, Center
+from masters.models import Role, Center, AgeGroup
 from profile.models import Profile, Membership
 from profile.models import YMHTMobile, YMHTEmail
 from profile.models import YMHTAddress, YMHTEducation
@@ -58,30 +59,11 @@ class YMHTMembershipInline(admin.StackedInline):
 
             current_profile = Profile.objects.get(user=request.user)
 
-            if not Membership.objects.filter(profile=current_profile).exists():
-                return self.readonly_fields 
+            user_level = Membership.objects.filter(profile=current_profile,is_active=True).aggregate(Max('role__level'))
 
-            current_membership = Membership.objects.filter(profile=current_profile)
-
-            current_roles = []
-
-            for member in current_membership:
-                if member.is_active:
-                    current_roles.append(member.role.level)
-
-            highest_level = max(current_roles)
-
-            current_obj_members = Membership.objects.filter(profile=obj)
-
-            current_obj_roles = []
-
-            for member in current_obj_members:
-
-                if member.is_active:
-                    current_obj_roles.append(member.role.level)
-
-            highest_obj_level = max(current_obj_roles)
-            if (highest_obj_level >= highest_level):
+            accessed_obj_level = Membership.objects.filter(profile=obj,is_active=True).aggregate(Max('role__level'))
+            
+            if (accessed_obj_level >= user_level):
                 self.extra = 0
                 self.max_num = 0
                 self.can_delete = False
